@@ -34,3 +34,7 @@ class RAM:
 
     def readBalls(self, locations):
         return [self.readBall(location) for location in locations]
+    
+    def appendBalls(self, balls):
+        self.file.seek(0,2)
+        self.file.write(b''.join(balls))
