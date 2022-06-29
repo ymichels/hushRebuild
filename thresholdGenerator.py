@@ -15,3 +15,8 @@ class ThresholdGenerator:
         self.b -= 1
         self.nPrime -= sample
         return sample
+    
+    def regenerate(self, prevThreshold):
+        self.nPrime += prevThreshold
+        self.b += 1
+        return self.generate()
