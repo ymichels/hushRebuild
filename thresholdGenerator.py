@@ -8,7 +8,7 @@ class ThresholdGenerator:
     
     def reset(self):
         self.b = NUMBER_OF_BINS
-        self.nPrime = int(N*EPSILON)
+        self.nPrime = N - int(N*EPSILON)
     
     def generate(self):
         sample = np.random.binomial(self.nPrime, 1/self.b)
