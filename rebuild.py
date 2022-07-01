@@ -17,7 +17,7 @@ class Rebuild:
     # This function prepares the bins for writing.
     # It fills the bins with empty values.
     def cleanWriteMemory(self):
-        #Cleaning the bins
+        # #Cleaning the bins
         currentWrite = 0
         emptyBin = [self.dummy]*BIN_SIZE
         while currentWrite < DATA_SIZE*2:
@@ -37,6 +37,10 @@ class Rebuild:
         self.ballsIntoBins()
         self.moveSecretLoad()
         self.tightCompaction()
+        print('RAM.RT_WRITE: ', RAM.RT_WRITE)
+        print('RAM.RT_READ: ', RAM.RT_READ)
+        print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
+        print('RAM.BALL_READ: ', RAM.BALL_READ)
         
     def tightCompaction(self):
         offset = int(EPSILON*N/MU)/2
@@ -98,13 +102,24 @@ class Rebuild:
 
     def _moveSecretLoad(self, binsCapacity, binTops, iterationNum):
         writeBalls = []
+        i = 0
         for capacity,binTop in zip(binsCapacity,binTops):
-            #Add only the balls above the threshold
+            
+            #this is to skip the non-existant bins.
+            # Example: 47 bins, epsilon = 1/9.
+            # so we pass on 9 bins at a time, but in the last iteration we pass on the last two bins and then we break.
+            if iterationNum*(1/EPSILON) + i >= NUMBER_OF_BINS:
+                break
+            
+            #generate a threshold
             threshold = self.thresholdGenerator.generate()
             while threshold >= capacity:
+                print('failed')
                 threshold = self.thresholdGenerator.regenerate(threshold)
                 
+            #Add only the balls above the threshold
             writeBalls.extend(binTop[- (capacity - threshold):])
+            i +=1
         
         #Add the appropriate amount of dummies
         writeBalls.extend([self.dummy]*(2*MU - len(writeBalls)))
@@ -132,6 +147,8 @@ class Rebuild:
         writeBalls = []
         for binNum, capacityBall in binsCapacity:
             capacity = int.from_bytes(capacityBall, 'big', signed=False)
+            if capacity >= 2*MU -1:
+                print('error')
             binLoc = binNum*BIN_SIZE_IN_BYTES
             binWriteLoc = binLoc + (capacity + 1) * BALL_SIZE
             newBalls = localBinsDict[binNum]
