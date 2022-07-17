@@ -1,0 +1,100 @@
+\documentclass{article}
+
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[english]{babel}
+
+% Set page size and margins
+% Replace `letterpaper' with`a4paper' for UK/EU standard size
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{algpseudocode}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\title{Rebuilding the tables}
+\author{Yehuda Michelson}
+\usepackage[mathletters]{ucs}
+\DeclareUnicodeCharacter{955}{$\lambda$}
+\begin{document}
+\maketitle
+
+\section{Introduction}
+In this document, I intend to describe the code I wrote, It's purpose is to rebuild a shuffled array of balls, which is part of our implementation of the oblivious RAM.
+\subsection{Overview}
+The code is composed of three stages:
+\begin{enumerate}
+    \item Balls into bins.
+    \item Select \& move the secret load.
+    \item Tight compaction on the secret Load
+\end{enumerate}
+\subsection{inputs and configurations}
+\begin{itemize}
+    \item Input: $DATA\_LOCATION$ - The path to the original balls.
+    \item $N$ - The amount of balls.
+    \item $BALL\_SIZE$ - The size of a ball in bytes.
+    \item $\mu$ - The average amount of balls per bin.
+    \item $NUMBER\_OF\_BINS$ (also referred to as $B$) - the amount of bins $N/\mu$.
+    \item $BIN\_SIZE$ - the max size of a bin $2\mu$
+    \item $\varepsilon$ - The fraction of balls to be moved to the overflow pile $\frac{1}{\log{\lambda}}$.
+\end{itemize}
+\section{Balls into bins}
+In this stage the code goes over the balls from the original array. 
+\begin{itemize}
+    \item $2\mu$ balls at a time, to reduce round trips. this is done because our code is assumed to have approximately $2\mu$ size of local memory    
+    \item The code determines to which bin each ball is thrown using a $AES$ pseudo random function.
+    \item The first ball in each bin contains the capacity of the bin (meaning how much of the bin is currently full) and is updated with every bulk insertion.
+\end{itemize}
+
+\section{Select \& move the secret load}
+In this stage the code goes over the bins from the previous stage.
+\begin{itemize}
+    \item It goes over $1/\varepsilon$ bins at a time, to reduce round trips. This is done because our code is assumed to have approximately $2\mu$ size of local memory, and from each bin we read $2\mu\varepsilon$ as explained in the next item.
+    \item from each bin - we read the capacity-ball and then we read the $2\mu\varepsilon$ top most balls of the bin. This is done because as explained in a previous document - the secret load would be there with high likelihood.
+    \item For each bin, the code selects a secret threshold and copies only the balls above the threshold.
+    \item from the $1/\varepsilon$ bins, the code takes the copied balls, and adds up enough dummies at the end so that there are $2\mu$ balls. Then the code writes the already tightly compacted bin to the overflow pile.
+\end{itemize}
+\section{Tight compaction on the secret Load}
+Currently we have in the overflow pile $\varepsilon B$ bins which are already tightly compacted. We assume a mixed stripe along the middle and do a tight compaction on it (the likelihood of this mixed stripe still needs to be proven)
+
+
+\begin{center}
+\begin{tabular}{||c c c c||} 
+ \hline
+ $n$ & $LM$ & $\Pr[X\leq \mu - 0.5\varepsilon\mu]$ & $\Pr[Y\geq \mu - 0.5\varepsilon\mu]$ \\ [0.5ex] 
+ \hline\hline
+ $2^{30}$ & $\sim4*10^{-4}$ & $\sim4*2^{-50}$ & $\sim2*2^{-50}$\\ 
+ \hline
+ $2^{25}$ & $\sim7*10^{-3}$ & $\sim6*2^{-43}$ & $\sim3*2^{-43}$\\ 
+ \hline
+  $2^{20}$ & $\sim0.122$ & $\sim3*2^{-37}$ & $\sim2^{-37}$\\ 
+ \hline
+\end{tabular}
+\end{center}
+\subsection{Results}
+\begin{itemize}
+    \item $N = 2^{20}$ 
+    \item $BALL\_SIZE = 16$ bytes
+    \item $\mu = 30\log^3{\lambda} = 21870$
+    \item $NUMBER\_OF\_BINS = 47$
+    \item $\varepsilon = \frac{1}{9}$
+\end{itemize}
+
+\begin{center}
+\begin{tabular}{||c c c c c||} 
+ \hline
+ stage & RT-write & RT-read & Ball-write & Ball-read \\ [0.5ex] 
+ \hline\hline
+ balls into bins& 24 & 48 & 1050888 & 1050888 \\ 
+ \hline
+ move secret load & 6 & 12 & 262440 & 262494 \\ 
+ \hline
+  tight compaction & 3 & 3 & 131220 & 131220 \\ 
+  [0.5ex] 
+ \hline\hline
+ overall & 33 & 63 & 1444548 & 1444602 \\ \hline 
+\end{tabular}
+\end{center}
+\end{document}
