@@ -38,7 +38,7 @@ class Rebuild:
         self.moveSecretLoad()
         self.tightCompaction()
         
-        self.cuckooHashBins()
+        #self.cuckooHashBins()
         print('RAM.RT_WRITE: ', RAM.RT_WRITE)
         print('RAM.RT_READ: ', RAM.RT_READ)
         print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)

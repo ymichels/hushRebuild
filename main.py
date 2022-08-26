@@ -12,6 +12,9 @@ binData = binData[1:capacity+1]
 b = CuckooHash()
 b.insert_bulk(binData)
 print(b.stash)
+
+######NEED TO GENERATE A RANDOM 17mb text & then test the thing.
+
 # print('RAM.RT_WRITE: ', RAM.RT_WRITE)
 # print('RAM.RT_READ: ', RAM.RT_READ)
 # print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
