@@ -116,7 +116,7 @@ class Rebuild:
             #generate a threshold
             threshold = self.thresholdGenerator.generate()
             while threshold >= capacity:
-                print('failed')
+                raise Exception("Error, threshold is greator than capacity")
                 threshold = self.thresholdGenerator.regenerate(threshold)
                 
             #Add only the balls above the threshold
@@ -139,8 +139,8 @@ class Rebuild:
     def _ballsIntoBins(self, balls):
         localBinsDict = defaultdict(list)
         for ball in balls:
-            localBinsDict[self.byteOperations.ballToBinIndex(
-                ball)].append(ball)
+            localBinsDict[self.byteOperations.ballToPseudoRandomNumber(
+                ball, NUMBER_OF_BINS)].append(ball)
         startLocations = [binNum *
                           BIN_SIZE_IN_BYTES for binNum in localBinsDict.keys()]
         binsCapacity = zip(localBinsDict.keys(),
@@ -150,7 +150,7 @@ class Rebuild:
         for binNum, capacityBall in binsCapacity:
             capacity = int.from_bytes(capacityBall, 'big', signed=False)
             if capacity >= 2*MU -1:
-                print('error')
+                raise Exception("Error, bin is to full")
             binLoc = binNum*BIN_SIZE_IN_BYTES
             binWriteLoc = binLoc + (capacity + 1) * BALL_SIZE
             newBalls = localBinsDict[binNum]

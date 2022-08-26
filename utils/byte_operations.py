@@ -10,14 +10,12 @@ class ByteOperations:
 
     
     #TODO: use only 90% of the ball as the key
-    def ballToLocationInBin(self, ball):
+    def ballToPseudoRandomNumber(self, ball,limit=-1):
         enc = self.cipher.encrypt(ball)
-        return int.from_bytes(enc, 'big', signed=False) % BIN_SIZE
+        if limit == -1:
+            return int.from_bytes(enc, 'big', signed=False)
+        return int.from_bytes(enc, 'big', signed=False) % limit
     
-    def ballToBinIndex(self, ball):
-        enc = self.cipher.encrypt(ball)
-        return int.from_bytes(enc, 'big', signed=False) % NUMBER_OF_BINS
-
     def writeTransposed(self, ram: RAM, balls, offset, start):
         chunks = []
         for i in range(len(balls)):

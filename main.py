@@ -2,12 +2,16 @@
 from RAM.ram import RAM
 from config import BALL_SIZE, BIN_SIZE, BIN_SIZE_IN_BYTES, BINS_LOCATION, N, OVERFLOW_LOCATION
 from rebuild import Rebuild
+from utils.cuckoo_hash import CuckooHash
 
 
 a = Rebuild()
-x = a.binsRam.readChunks([(0*BIN_SIZE_IN_BYTES, (0 +1)*BIN_SIZE_IN_BYTES )])
-capacity = int.from_bytes(x[0], 'big', signed=False)
-print(x)
+binData = a.binsRam.readChunks([(0*BIN_SIZE_IN_BYTES, (0 + 1)*BIN_SIZE_IN_BYTES )])
+capacity = int.from_bytes(binData[0], 'big', signed=False)
+binData = binData[1:capacity+1]
+b = CuckooHash()
+b.insert_bulk(binData)
+print(b.stash)
 # print('RAM.RT_WRITE: ', RAM.RT_WRITE)
 # print('RAM.RT_READ: ', RAM.RT_READ)
 # print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
