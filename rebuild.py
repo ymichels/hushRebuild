@@ -1,13 +1,13 @@
 from RAM.ram import RAM
 from collections import defaultdict
-from byteOperations import ByteOperations
-from config import BALL_SIZE, BIN_SIZE, BIN_SIZE_IN_BYTES, BINS_LOCATION, DATA_LOCATION, DATA_SIZE, EPSILON, LOCAL_MEMORY_SIZE, MU, N, NUMBER_OF_BINS, OVERFLOW_LOCATION
+from utils.byte_operations import ByteOperations
+from config import BALL_SIZE, BIN_SIZE, BIN_SIZE_IN_BYTES, BINS_LOCATION, DATA_LOCATION, DATA_SIZE, EPSILON, LOCAL_MEMORY_SIZE, MAIN_KEY, MU, N, NUMBER_OF_BINS, OVERFLOW_LOCATION
 from thresholdGenerator import ThresholdGenerator
 
 class Rebuild:
 
     def __init__(self) -> None:
-        self.byteOperations = ByteOperations()
+        self.byteOperations = ByteOperations(MAIN_KEY)
         self.dataRam = RAM(DATA_LOCATION)
         self.binsRam = RAM(BINS_LOCATION)
         self.overflowRam = RAM(OVERFLOW_LOCATION)
@@ -37,6 +37,8 @@ class Rebuild:
         self.ballsIntoBins()
         self.moveSecretLoad()
         self.tightCompaction()
+        
+        self.cuckooHashBins()
         print('RAM.RT_WRITE: ', RAM.RT_WRITE)
         print('RAM.RT_READ: ', RAM.RT_READ)
         print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
@@ -165,3 +167,17 @@ class Rebuild:
             writeBalls.extend(newBalls)
         self.binsRam.writeChunks(writeChunks,writeBalls)
 
+    def cuckooHashBins(self):
+        5+5
+        currentBinIndex = 0
+        iterationNum = 0
+        while currentBinIndex < NUMBER_OF_BINS:
+            binData = self.binsRam.readChunks([(currentBinIndex*BIN_SIZE_IN_BYTES, (currentBinIndex +1)*BIN_SIZE_IN_BYTES )])
+            capacity = int.from_bytes(binData[0], 'big', signed=False)
+            binData = binData[1:capacity+1]
+            #############write the data
+            
+            #############
+            THE_DATA = 'nothing_yet'
+            self.binsRam.writeChunks([(currentBinIndex*BIN_SIZE_IN_BYTES, (currentBinIndex +1)*BIN_SIZE_IN_BYTES )],THE_DATA)
+            currentBinIndex += 1

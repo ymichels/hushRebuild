@@ -1,15 +1,18 @@
 
 from RAM.ram import RAM
-from config import BALL_SIZE, BIN_SIZE, BINS_LOCATION, N, OVERFLOW_LOCATION
+from config import BALL_SIZE, BIN_SIZE, BIN_SIZE_IN_BYTES, BINS_LOCATION, N, OVERFLOW_LOCATION
 from rebuild import Rebuild
 
 
 a = Rebuild()
-a.tightCompaction()
-print('RAM.RT_WRITE: ', RAM.RT_WRITE)
-print('RAM.RT_READ: ', RAM.RT_READ)
-print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
-print('RAM.BALL_READ: ', RAM.BALL_READ)
+x = a.binsRam.readChunks([(0*BIN_SIZE_IN_BYTES, (0 +1)*BIN_SIZE_IN_BYTES )])
+capacity = int.from_bytes(x[0], 'big', signed=False)
+print(x)
+# print('RAM.RT_WRITE: ', RAM.RT_WRITE)
+# print('RAM.RT_READ: ', RAM.RT_READ)
+# print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
+# print('RAM.BALL_READ: ', RAM.BALL_READ)
+
 # a.rebuild()
 # RAM(BINS_LOCATION).plusOne()
 # RAM(BINS_LOCATION).plusOne()
