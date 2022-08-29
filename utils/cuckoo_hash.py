@@ -1,6 +1,6 @@
 from Cryptodome.Cipher import AES
 from RAM.ram import RAM
-from config import BALL_SIZE, BIN_SIZE, CUCKOO_HASH_KEY_1, CUCKOO_HASH_KEY_2, LOG_LAMBDA, MU, NUMBER_OF_BINS
+from config import BALL_SIZE, BIN_SIZE, CUCKOO_HASH_KEY_1, CUCKOO_HASH_KEY_2, LOG_LAMBDA, MU, NUMBER_OF_BINS, STASH_SIZE
 from utils.byte_operations import ByteOperations
 
 
@@ -34,7 +34,7 @@ class CuckooHash:
             ball = evicted_ball
             if location in seen_locations:
                 self.stash.append(ball)
-                if len(self.stash) > LOG_LAMBDA:
+                if len(self.stash) > STASH_SIZE:
                     raise Exception("Error, Cuckoo hash stash is full")
                 break
             seen_locations.append(location)

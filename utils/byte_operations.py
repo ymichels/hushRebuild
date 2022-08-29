@@ -8,8 +8,9 @@ class ByteOperations:
         self.cipher = AES.new(key, AES.MODE_ECB)
 
     
-    #TODO: use only 90% of the ball as the key
+    # TODO: 1 byte as data, 1 byte as status, the rest is the key
     def ballToPseudoRandomNumber(self, ball,limit=-1):
+        # TODO: only on the key, not the data or status
         enc = self.cipher.encrypt(ball)
         if limit == -1:
             return int.from_bytes(enc, 'big', signed=False)

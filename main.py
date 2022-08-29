@@ -6,8 +6,7 @@ from utils.cuckoo_hash import CuckooHash
 
 
 a = Rebuild()
-binData = a.overflowRam.readChunks([(int(DATA_SIZE*EPSILON/1.11), int(DATA_SIZE*EPSILON/1.11) + BIN_SIZE_IN_BYTES )])
-print(binData[1])
+a.rebuild()
 
 ######NEED TO GENERATE A RANDOM 17mb text & then test the thing.
 

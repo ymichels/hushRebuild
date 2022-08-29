@@ -1,7 +1,7 @@
 from RAM.ram import RAM
 from collections import defaultdict
 from utils.byte_operations import ByteOperations
-from config import BALL_SIZE, BIN_SIZE, BIN_SIZE_IN_BYTES, BINS_LOCATION, DATA_LOCATION, DATA_SIZE, EPSILON, LOCAL_MEMORY_SIZE, LOG_LAMBDA, MAIN_KEY, MU, N, NUMBER_OF_BINS, OVERFLOW_LOCATION
+from config import BALL_SIZE, BIN_SIZE, BIN_SIZE_IN_BYTES, BINS_LOCATION, DATA_LOCATION, DATA_SIZE, EPSILON, LOCAL_MEMORY_SIZE, LOG_LAMBDA, MAIN_KEY, MU, N, NUMBER_OF_BINS, OVERFLOW_LOCATION, STASH_SIZE
 from thresholdGenerator import ThresholdGenerator
 from utils.cuckoo_hash import CuckooHash
 from utils.helper_functions import get_random_string
@@ -20,6 +20,7 @@ class Rebuild:
     def createReadMemory(self):
         currentWrite = 0
         while currentWrite < DATA_SIZE:
+            # TODO: add data status, not just random
             randomBin = [get_random_string(BALL_SIZE) for i in range(BIN_SIZE)]
             self.dataRam.writeChunks(
                 [(currentWrite, currentWrite + BIN_SIZE_IN_BYTES)], randomBin)
@@ -48,8 +49,7 @@ class Rebuild:
         self.ballsIntoBins()
         self.moveSecretLoad()
         self.tightCompaction()
-        
-        #self.cuckooHashBins()
+        self.cuckooHashBins()
         print('RAM.RT_WRITE: ', RAM.RT_WRITE)
         print('RAM.RT_READ: ', RAM.RT_READ)
         print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
@@ -185,6 +185,7 @@ class Rebuild:
         overflow_written = 0
         stashes = []
         while current_bin_index < NUMBER_OF_BINS:
+            print(current_bin_index)
             # get the bin
             bin_data = self.binsRam.readChunks([(current_bin_index*BIN_SIZE_IN_BYTES, (current_bin_index +1)*BIN_SIZE_IN_BYTES )])
             capacity = int.from_bytes(bin_data[0], 'big', signed=False)
@@ -199,11 +200,14 @@ class Rebuild:
             self.binsRam.writeChunks([(current_bin_index*BIN_SIZE_IN_BYTES, (current_bin_index +1)*BIN_SIZE_IN_BYTES )],hash_tables)
             
             # write the stash
-            stashes += cuckoo_hash.stash + [self.dummy]*(LOG_LAMBDA - len(cuckoo_hash.stash))
-            if len(stashes) + LOG_LAMBDA >= BIN_SIZE:
+            # TODO: add special dummies
+            print('stash:', len(cuckoo_hash.stash))
+            stashes += cuckoo_hash.stash + [self.dummy]*(STASH_SIZE - len(cuckoo_hash.stash))
+            if len(stashes) + STASH_SIZE >= BIN_SIZE:
                 stashes = stashes + [self.dummy]*(BIN_SIZE- len(stashes))
-                self.overflowRam.writeChunks([(DATA_SIZE*EPSILON + overflow_written*BIN_SIZE_IN_BYTES, DATA_SIZE*EPSILON + (overflow_written +1)*BIN_SIZE_IN_BYTES )],stashes)
+                self.overflowRam.writeChunks([(int(DATA_SIZE*EPSILON) + overflow_written*BIN_SIZE_IN_BYTES, int(DATA_SIZE*EPSILON) + (overflow_written +1)*BIN_SIZE_IN_BYTES )],stashes)
                 stashes = []
+                overflow_written += 1
             current_bin_index += 1
-        self.overflowRam.writeChunks([(DATA_SIZE*EPSILON + overflow_written*BIN_SIZE_IN_BYTES, DATA_SIZE*EPSILON + overflow_written*BIN_SIZE_IN_BYTES + len(stashes) )],stashes)
+        self.overflowRam.writeChunks([(int(DATA_SIZE*EPSILON) + overflow_written*BIN_SIZE_IN_BYTES, int(DATA_SIZE*EPSILON) + overflow_written*BIN_SIZE_IN_BYTES + len(stashes) )],stashes)
         
