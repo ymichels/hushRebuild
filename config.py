@@ -21,9 +21,9 @@ RT_READ = 0
 RT_WRITE = 0
 
 
-MAIN_KEY = 'Sixteen byte key'
-CUCKOO_HASH_KEY_1 = 'Cuckoo hash key1'
-CUCKOO_HASH_KEY_2 = 'Cuckoo hash key2'
+MAIN_KEY = b'Sixteen byte key'
+CUCKOO_HASH_KEY_1 = b'Cuckoo hash key1'
+CUCKOO_HASH_KEY_2 = b'Cuckoo hash key2'
 
 # logn = 20
 # n = 2**logn

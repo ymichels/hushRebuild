@@ -1,17 +1,13 @@
 
 from RAM.ram import RAM
-from config import BALL_SIZE, BIN_SIZE, BIN_SIZE_IN_BYTES, BINS_LOCATION, N, OVERFLOW_LOCATION
+from config import BALL_SIZE, BIN_SIZE, BIN_SIZE_IN_BYTES, BINS_LOCATION, DATA_SIZE, EPSILON, N, OVERFLOW_LOCATION
 from rebuild import Rebuild
 from utils.cuckoo_hash import CuckooHash
 
 
 a = Rebuild()
-binData = a.binsRam.readChunks([(0*BIN_SIZE_IN_BYTES, (0 + 1)*BIN_SIZE_IN_BYTES )])
-capacity = int.from_bytes(binData[0], 'big', signed=False)
-binData = binData[1:capacity+1]
-b = CuckooHash()
-b.insert_bulk(binData)
-print(b.stash)
+binData = a.overflowRam.readChunks([(int(DATA_SIZE*EPSILON/1.11), int(DATA_SIZE*EPSILON/1.11) + BIN_SIZE_IN_BYTES )])
+print(binData[1])
 
 ######NEED TO GENERATE A RANDOM 17mb text & then test the thing.
 

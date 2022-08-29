@@ -5,7 +5,6 @@ from config import BALL_SIZE, BIN_SIZE, MU, NUMBER_OF_BINS
 
 class ByteOperations:
     def __init__(self,key) -> None:
-        key = b'Sixteen byte key'
         self.cipher = AES.new(key, AES.MODE_ECB)
 
     

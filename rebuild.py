@@ -1,8 +1,10 @@
 from RAM.ram import RAM
 from collections import defaultdict
 from utils.byte_operations import ByteOperations
-from config import BALL_SIZE, BIN_SIZE, BIN_SIZE_IN_BYTES, BINS_LOCATION, DATA_LOCATION, DATA_SIZE, EPSILON, LOCAL_MEMORY_SIZE, MAIN_KEY, MU, N, NUMBER_OF_BINS, OVERFLOW_LOCATION
+from config import BALL_SIZE, BIN_SIZE, BIN_SIZE_IN_BYTES, BINS_LOCATION, DATA_LOCATION, DATA_SIZE, EPSILON, LOCAL_MEMORY_SIZE, LOG_LAMBDA, MAIN_KEY, MU, N, NUMBER_OF_BINS, OVERFLOW_LOCATION
 from thresholdGenerator import ThresholdGenerator
+from utils.cuckoo_hash import CuckooHash
+from utils.helper_functions import get_random_string
 
 class Rebuild:
 
@@ -14,6 +16,15 @@ class Rebuild:
         self.thresholdGenerator = ThresholdGenerator()
         self.dummy = b'\x00'*BALL_SIZE
 
+    # This function creates random data for testing.
+    def createReadMemory(self):
+        currentWrite = 0
+        while currentWrite < DATA_SIZE:
+            randomBin = [get_random_string(BALL_SIZE) for i in range(BIN_SIZE)]
+            self.dataRam.writeChunks(
+                [(currentWrite, currentWrite + BIN_SIZE_IN_BYTES)], randomBin)
+            currentWrite += BIN_SIZE_IN_BYTES
+    
     # This function prepares the bins for writing.
     # It fills the bins with empty values.
     def cleanWriteMemory(self):
@@ -169,15 +180,30 @@ class Rebuild:
 
     def cuckooHashBins(self):
         5+5
-        currentBinIndex = 0
-        iterationNum = 0
-        while currentBinIndex < NUMBER_OF_BINS:
-            binData = self.binsRam.readChunks([(currentBinIndex*BIN_SIZE_IN_BYTES, (currentBinIndex +1)*BIN_SIZE_IN_BYTES )])
-            capacity = int.from_bytes(binData[0], 'big', signed=False)
-            binData = binData[1:capacity+1]
-            #############write the data
+        current_bin_index = 0
+        iteration_num = 0
+        overflow_written = 0
+        stashes = []
+        while current_bin_index < NUMBER_OF_BINS:
+            # get the bin
+            bin_data = self.binsRam.readChunks([(current_bin_index*BIN_SIZE_IN_BYTES, (current_bin_index +1)*BIN_SIZE_IN_BYTES )])
+            capacity = int.from_bytes(bin_data[0], 'big', signed=False)
+            bin_data = bin_data[1:capacity+1]
+
+            # generate the cuckoo hash
+            cuckoo_hash = CuckooHash()
+            cuckoo_hash.insert_bulk(bin_data)
+
+            # write the data
+            hash_tables = cuckoo_hash.table1 + cuckoo_hash.table2
+            self.binsRam.writeChunks([(current_bin_index*BIN_SIZE_IN_BYTES, (current_bin_index +1)*BIN_SIZE_IN_BYTES )],hash_tables)
             
-            #############
-            THE_DATA = 'nothing_yet'
-            self.binsRam.writeChunks([(currentBinIndex*BIN_SIZE_IN_BYTES, (currentBinIndex +1)*BIN_SIZE_IN_BYTES )],THE_DATA)
-            currentBinIndex += 1
+            # write the stash
+            stashes += cuckoo_hash.stash + [self.dummy]*(LOG_LAMBDA - len(cuckoo_hash.stash))
+            if len(stashes) + LOG_LAMBDA >= BIN_SIZE:
+                stashes = stashes + [self.dummy]*(BIN_SIZE- len(stashes))
+                self.overflowRam.writeChunks([(DATA_SIZE*EPSILON + overflow_written*BIN_SIZE_IN_BYTES, DATA_SIZE*EPSILON + (overflow_written +1)*BIN_SIZE_IN_BYTES )],stashes)
+                stashes = []
+            current_bin_index += 1
+        self.overflowRam.writeChunks([(DATA_SIZE*EPSILON + overflow_written*BIN_SIZE_IN_BYTES, DATA_SIZE*EPSILON + overflow_written*BIN_SIZE_IN_BYTES + len(stashes) )],stashes)
+        
