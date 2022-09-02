@@ -32,7 +32,7 @@ class CuckooHash:
             if evicted_ball == self.dummy:
                 break
             ball = evicted_ball
-            if location in seen_locations:
+            if len(seen_locations) > MU:
                 self.stash.append(ball)
                 if len(self.stash) > STASH_SIZE:
                     raise Exception("Error, Cuckoo hash stash is full")
