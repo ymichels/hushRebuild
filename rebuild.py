@@ -1,7 +1,7 @@
 from RAM.ram import RAM
 from collections import defaultdict
 from utils.byte_operations import ByteOperations
-from config import BALL_SIZE, BIN_SIZE, BIN_SIZE_IN_BYTES, BINS_LOCATION, DATA_LOCATION, DATA_SIZE, EPSILON, LOCAL_MEMORY_SIZE, LOG_LAMBDA, MAIN_KEY, MU, N, NUMBER_OF_BINS, OVERFLOW_LOCATION, STASH_SIZE
+from config import BALL_SIZE, BIN_SIZE, BIN_SIZE_IN_BYTES, BINS_LOCATION, DATA_LOCATION, DATA_SIZE, DATA_STATUS, DUMMY_STATUS, EPSILON, LOCAL_MEMORY_SIZE, LOG_LAMBDA, MAIN_KEY, MU, N, NUMBER_OF_BINS, OVERFLOW_LOCATION, STASH_SIZE
 from thresholdGenerator import ThresholdGenerator
 from utils.cuckoo_hash import CuckooHash
 from utils.helper_functions import get_random_string
@@ -20,8 +20,7 @@ class Rebuild:
     def createReadMemory(self):
         current_write = 0
         while current_write < DATA_SIZE:
-            # TODO: add data status, not just random
-            random_bin = [get_random_string(BALL_SIZE) for i in range(BIN_SIZE)]
+            random_bin = [get_random_string(BALL_SIZE,DATA_STATUS) for i in range(BIN_SIZE)]
             self.data_ram.writeChunks(
                 [(current_write, current_write + BIN_SIZE_IN_BYTES)], random_bin)
             current_write += BIN_SIZE_IN_BYTES
@@ -200,9 +199,9 @@ class Rebuild:
             self.bins_ram.writeChunks([(current_bin_index*BIN_SIZE_IN_BYTES, (current_bin_index +1)*BIN_SIZE_IN_BYTES )],hash_tables)
             
             # write the stash
-            # TODO: add special dummies
             print('stash:', len(cuckoo_hash.stash))
-            stashes += cuckoo_hash.stash + [self.dummy]*(STASH_SIZE - len(cuckoo_hash.stash))
+            dummies = [get_random_string(BALL_SIZE,DUMMY_STATUS) for i in range(STASH_SIZE - len(cuckoo_hash.stash))]
+            stashes += cuckoo_hash.stash + dummies
             if len(stashes) + STASH_SIZE >= BIN_SIZE:
                 stashes = stashes + [self.dummy]*(BIN_SIZE- len(stashes))
                 self.overflow_ram.writeChunks([(int(DATA_SIZE*EPSILON) + overflow_written*BIN_SIZE_IN_BYTES, int(DATA_SIZE*EPSILON) + (overflow_written +1)*BIN_SIZE_IN_BYTES )],stashes)

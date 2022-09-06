@@ -1,17 +1,19 @@
 from Cryptodome.Cipher import AES
 from RAM.ram import RAM
-from config import BALL_SIZE, BIN_SIZE, MU, NUMBER_OF_BINS
+from config import BALL_SIZE, BALL_STATUS_POSITION, BIN_SIZE, MU, NUMBER_OF_BINS
 
 
 class ByteOperations:
     def __init__(self,key) -> None:
+        self.key_length = len(key)
         self.cipher = AES.new(key, AES.MODE_ECB)
 
     
-    # TODO: 1 byte as data, 1 byte as status, the rest is the key
     def ballToPseudoRandomNumber(self, ball,limit=-1):
-        # TODO: only on the key, not the data or status
-        enc = self.cipher.encrypt(ball)
+        ball_key = ball[BALL_STATUS_POSITION+1:]
+        if len(ball_key) % self.key_length != 0:
+            ball_key += b'\x00'*(self.key_length - len(ball_key) % self.key_length)
+        enc = self.cipher.encrypt(ball_key)
         if limit == -1:
             return int.from_bytes(enc, 'big', signed=False)
         return int.from_bytes(enc, 'big', signed=False) % limit

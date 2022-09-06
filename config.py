@@ -26,6 +26,10 @@ MAIN_KEY = b'Sixteen byte key'
 CUCKOO_HASH_KEY_1 = b'Cuckoo hash key1'
 CUCKOO_HASH_KEY_2 = b'Cuckoo hash key2'
 
+
+BALL_STATUS_POSITION = 4
+DATA_STATUS = '\x01'
+DUMMY_STATUS = '\x00'
 # logn = 20
 # n = 2**logn
 # logLamb = 9
