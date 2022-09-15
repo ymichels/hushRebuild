@@ -160,7 +160,7 @@ class Rebuild:
         for bin_num, capacity_ball in bins_capacity:
             capacity = int.from_bytes(capacity_ball, 'big', signed=False)
             if capacity >= 2*MU -1:
-                raise Exception("Error, bin is to full")
+                raise Exception("Error, bin is too full")
             bin_loc = bin_num*BIN_SIZE_IN_BYTES
             bin_write_loc = bin_loc + (capacity + 1) * BALL_SIZE
             new_balls = local_bins_dict[bin_num]
