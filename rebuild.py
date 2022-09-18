@@ -1,3 +1,5 @@
+from cmath import log
+import math
 from RAM.ram import RAM
 from collections import defaultdict
 from utils.byte_operations import ByteOperations
@@ -217,14 +219,26 @@ class Rebuild:
 
     def obliviousBallsIntoBins(self):
         self._obliviousBallsIntoBinsFirstIteration()
-        current_ram = self.overflow_ram
-        next_ram = self.second_overflow_ram
+        next_ram = self.overflow_ram
+        current_ram = self.second_overflow_ram
+        for bit_num in range(math.ceil(log(NUMBER_OF_BINS_IN_OVERFLOW,2))):
+            for bin_index in range(math.ceil(NUMBER_OF_BINS_IN_OVERFLOW/2)):
+                6+6
+                #realize which two bins to read from according to bit_num and bin_index
+                #realize which two bins to write to according to bit_num and bin_index
+                # print the real overflow pile in the end.
+                # set the ram properly.
+                
+        
     
     def _obliviousBallsIntoBinsFirstIteration(self):
         current_read_pos = 0
         oblivious_sort = ObliviousSort()
         while current_read_pos < OVERFLOW_SIZE:
-            balls = self.data_ram.readChunks(
-                [(current_read_pos, current_read_pos + LOCAL_MEMORY_SIZE)])
-            oblivious_sort.splitToBinsByBit(balls, 0, NUMBER_OF_BINS_IN_OVERFLOW)
-            current_read_pos += LOCAL_MEMORY_SIZE
+            balls = self.overflow_ram.readChunks(
+                [(current_read_pos, current_read_pos + BIN_SIZE_IN_BYTES)])
+            bin_zero, bin_one = oblivious_sort.splitToBinsByBit(balls, 0, NUMBER_OF_BINS_IN_OVERFLOW)
+            self.second_overflow_ram.writeChunks(
+                [(current_read_pos, current_read_pos + 2*BIN_SIZE_IN_BYTES)], bin_zero, bin_one)
+            current_read_pos += BIN_SIZE_IN_BYTES
+        

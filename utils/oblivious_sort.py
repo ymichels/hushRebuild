@@ -1,4 +1,4 @@
-from config import BALL_SIZE, MAIN_KEY
+from config import BALL_SIZE, BIN_SIZE, MAIN_KEY
 from utils.byte_operations import ByteOperations
 
 
@@ -19,5 +19,8 @@ class ObliviousSort:
                 bin_one.append(ball)
             else:
                 bin_zero.append(ball)
+        bin_one = bin_one + [self.dummy] * (BIN_SIZE - len(bin_one))
+        bin_zero = bin_zero + [self.dummy] * (BIN_SIZE - len(bin_zero))
+        return bin_zero, bin_one
         
 
