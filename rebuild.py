@@ -1,10 +1,11 @@
 from RAM.ram import RAM
 from collections import defaultdict
 from utils.byte_operations import ByteOperations
-from config import BALL_SIZE, BIN_SIZE, BIN_SIZE_IN_BYTES, BINS_LOCATION, DATA_LOCATION, DATA_SIZE, DATA_STATUS, DUMMY_STATUS, EPSILON, LOCAL_MEMORY_SIZE, LOG_LAMBDA, MAIN_KEY, MU, N, NUMBER_OF_BINS, OVERFLOW_LOCATION, STASH_SIZE
+from config import BALL_SIZE, BIN_SIZE, BIN_SIZE_IN_BYTES, BINS_LOCATION, DATA_LOCATION, DATA_SIZE, DATA_STATUS, DUMMY_STATUS, EPSILON, LOCAL_MEMORY_SIZE, LOG_LAMBDA, MAIN_KEY, MU, N, NUMBER_OF_BINS, NUMBER_OF_BINS_IN_OVERFLOW, OVERFLOW_LOCATION, OVERFLOW_SECOND_LOCATION, OVERFLOW_SIZE, STASH_SIZE
 from thresholdGenerator import ThresholdGenerator
 from utils.cuckoo_hash import CuckooHash
 from utils.helper_functions import get_random_string
+from utils.oblivious_sort import ObliviousSort
 
 class Rebuild:
 
@@ -13,6 +14,7 @@ class Rebuild:
         self.data_ram = RAM(DATA_LOCATION)
         self.bins_ram = RAM(BINS_LOCATION)
         self.overflow_ram = RAM(OVERFLOW_LOCATION)
+        self.second_overflow_ram = RAM(OVERFLOW_SECOND_LOCATION)
         self.threshold_generator = ThresholdGenerator()
         self.dummy = b'\x00'*BALL_SIZE
 
@@ -38,8 +40,10 @@ class Rebuild:
         
         #Cleaning the overflow pile
         current_write = 0
-        while current_write < EPSILON*DATA_SIZE*2:
+        while current_write < OVERFLOW_SIZE*2:
             self.overflow_ram.writeChunks(
+                [(current_write, current_write + BIN_SIZE_IN_BYTES)], empty_bin)
+            self.second_overflow_ram.writeChunks(
                 [(current_write, current_write + BIN_SIZE_IN_BYTES)], empty_bin)
             current_write += BIN_SIZE_IN_BYTES
         
@@ -49,13 +53,14 @@ class Rebuild:
         self.moveSecretLoad()
         self.tightCompaction()
         self.cuckooHashBins()
+        self.obliviousBallsIntoBins()
         print('RAM.RT_WRITE: ', RAM.RT_WRITE)
         print('RAM.RT_READ: ', RAM.RT_READ)
         print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
         print('RAM.BALL_READ: ', RAM.BALL_READ)
         
     def tightCompaction(self):
-        offset = int(EPSILON*N/MU)/2
+        offset = NUMBER_OF_BINS_IN_OVERFLOW/2
         distance_from_center = 1/2
         midLocation = int(EPSILON*N)*BALL_SIZE
         
@@ -136,7 +141,7 @@ class Rebuild:
         #Add the appropriate amount of dummies
         write_balls.extend([self.dummy]*(2*MU - len(write_balls)))
         #Write to the overflow transposed (for the tight compaction later)
-        self.byte_operations.writeTransposed(self.overflow_ram, write_balls, int(EPSILON*N/MU), iteration_num*BALL_SIZE)
+        self.byte_operations.writeTransposed(self.overflow_ram, write_balls, NUMBER_OF_BINS_IN_OVERFLOW, iteration_num*BALL_SIZE)
 
     def ballsIntoBins(self):
         current_read_pos = 0
@@ -209,4 +214,17 @@ class Rebuild:
                 overflow_written += 1
             current_bin_index += 1
         self.overflow_ram.writeChunks([(int(DATA_SIZE*EPSILON) + overflow_written*BIN_SIZE_IN_BYTES, int(DATA_SIZE*EPSILON) + overflow_written*BIN_SIZE_IN_BYTES + len(stashes) )],stashes)
-        
+
+    def obliviousBallsIntoBins(self):
+        self._obliviousBallsIntoBinsFirstIteration()
+        current_ram = self.overflow_ram
+        next_ram = self.second_overflow_ram
+    
+    def _obliviousBallsIntoBinsFirstIteration(self):
+        current_read_pos = 0
+        oblivious_sort = ObliviousSort()
+        while current_read_pos < OVERFLOW_SIZE:
+            balls = self.data_ram.readChunks(
+                [(current_read_pos, current_read_pos + LOCAL_MEMORY_SIZE)])
+            oblivious_sort.splitToBinsByBit(balls, 0, NUMBER_OF_BINS_IN_OVERFLOW)
+            current_read_pos += LOCAL_MEMORY_SIZE

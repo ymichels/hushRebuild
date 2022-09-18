@@ -9,12 +9,17 @@ BIN_SIZE_IN_BYTES = BIN_SIZE*BALL_SIZE
 EPSILON = 1/LOG_LAMBDA
 STASH_SIZE = LOG_LAMBDA
 
+
 DATA_SIZE = N*BALL_SIZE
+OVERFLOW_SIZE = int(DATA_SIZE*EPSILON)
 LOCAL_MEMORY_SIZE = BIN_SIZE_IN_BYTES
+NUMBER_OF_BINS_IN_OVERFLOW = int(EPSILON*N/MU)
 
 DATA_LOCATION = '17Mb.txt'
 BINS_LOCATION = 'bins.txt'
 OVERFLOW_LOCATION = 'overflow.txt'
+# This is for the oblivious balls into bins so that the bins would not be overriden.
+OVERFLOW_SECOND_LOCATION = 'second_overflow.txt'
 
 BALL_READ = 0
 BALL_WRITE = 0

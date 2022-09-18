@@ -9,6 +9,9 @@ class ByteOperations:
         self.cipher = AES.new(key, AES.MODE_ECB)
 
     
+    def isBitOn(self, number, bit_num):
+        return (number & (2**bit_num)) > 0
+
     def ballToPseudoRandomNumber(self, ball,limit=-1):
         ball_key = ball[BALL_STATUS_POSITION+1:]
         if len(ball_key) % self.key_length != 0:

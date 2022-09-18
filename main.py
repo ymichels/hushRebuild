@@ -8,7 +8,6 @@ from utils.cuckoo_hash import CuckooHash
 a = Rebuild()
 a.rebuild()
 
-######NEED TO GENERATE A RANDOM 17mb text & then test the thing.
 
 # print('RAM.RT_WRITE: ', RAM.RT_WRITE)
 # print('RAM.RT_READ: ', RAM.RT_READ)
