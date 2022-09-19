@@ -8,6 +8,7 @@ class RAM:
     RT_WRITE = 0
     
     def __init__(self, fileName) -> None:
+        self.fileName = fileName
         self.file = open(fileName, 'r+b')
 
 

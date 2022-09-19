@@ -221,13 +221,24 @@ class Rebuild:
         self._obliviousBallsIntoBinsFirstIteration()
         next_ram = self.overflow_ram
         current_ram = self.second_overflow_ram
-        for bit_num in range(math.ceil(log(NUMBER_OF_BINS_IN_OVERFLOW,2))):
+        oblivious_sort = ObliviousSort()
+        for bit_num in range(1,math.ceil(log(NUMBER_OF_BINS_IN_OVERFLOW,2))):
+            first_bin_index = 0
             for bin_index in range(math.ceil(NUMBER_OF_BINS_IN_OVERFLOW/2)):
-                6+6
-                #realize which two bins to read from according to bit_num and bin_index
-                #realize which two bins to write to according to bit_num and bin_index
-                # print the real overflow pile in the end.
-                # set the ram properly.
+                first_bin = current_ram.readChunks([(first_bin_index*BIN_SIZE_IN_BYTES, (first_bin_index + 1)*BIN_SIZE_IN_BYTES)])
+                second_bin = current_ram.readChunks([
+                    ((first_bin_index + 2**bit_num)*BIN_SIZE_IN_BYTES, (first_bin_index + (2**bit_num) + 1)*BIN_SIZE_IN_BYTES)])
+                bin_zero, bin_one = oblivious_sort.splitToBinsByBit(first_bin + second_bin, bit_num, NUMBER_OF_BINS_IN_OVERFLOW)
+                
+                next_ram.writeChunks(
+                    [(bin_index*2*BIN_SIZE_IN_BYTES, (bin_index +1)*2*BIN_SIZE_IN_BYTES)], bin_zero + bin_one)
+                first_bin_index +=1
+                if first_bin_index % 2**bit_num == 0:
+                    first_bin_index += 2**bit_num
+            next_ram, current_ram = current_ram, next_ram
+        self.overflow_ram = current_ram
+        self.second_overflow_ram = next_ram
+        print('this is where the real overflow is stored:',self.overflow_ram.fileName)
                 
         
     
@@ -235,10 +246,9 @@ class Rebuild:
         current_read_pos = 0
         oblivious_sort = ObliviousSort()
         while current_read_pos < OVERFLOW_SIZE:
-            balls = self.overflow_ram.readChunks(
-                [(current_read_pos, current_read_pos + BIN_SIZE_IN_BYTES)])
+            balls = self.overflow_ram.readChunks([(current_read_pos, current_read_pos + BIN_SIZE_IN_BYTES)])
             bin_zero, bin_one = oblivious_sort.splitToBinsByBit(balls, 0, NUMBER_OF_BINS_IN_OVERFLOW)
             self.second_overflow_ram.writeChunks(
-                [(current_read_pos, current_read_pos + 2*BIN_SIZE_IN_BYTES)], bin_zero, bin_one)
+                [(current_read_pos, current_read_pos + 2*BIN_SIZE_IN_BYTES)], bin_zero + bin_one)
             current_read_pos += BIN_SIZE_IN_BYTES
         
