@@ -1,4 +1,4 @@
-from config import BALL_SIZE
+from config import config
 
 
 class RAM:
@@ -7,7 +7,8 @@ class RAM:
     RT_READ = 0
     RT_WRITE = 0
     
-    def __init__(self, fileName) -> None:
+    def __init__(self, fileName, conf:config) -> None:
+        self.conf = conf
         self.fileName = fileName
         self.file = open(fileName, 'r+b')
 
@@ -18,7 +19,7 @@ class RAM:
             print('RAM.BALL_READ: ', RAM.BALL_READ)
             
         self.file.seek(location)
-        return self.file.read(BALL_SIZE)
+        return self.file.read(self.conf.BALL_SIZE)
 
     def writeBall(self, location, ball):
         RAM.BALL_WRITE += 1
@@ -36,7 +37,7 @@ class RAM:
             start, end = chunk
             while start < end:
                 balls.append(self.readBall(start))
-                start += BALL_SIZE
+                start += self.conf.BALL_SIZE
         return balls
 
     def writeChunks(self, chunks, balls):
@@ -48,7 +49,7 @@ class RAM:
             start, end = chunk
             while start < end:
                 self.writeBall(start, balls[i])
-                start += BALL_SIZE
+                start += self.conf.BALL_SIZE
                 i += 1
         return balls
 

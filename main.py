@@ -1,14 +1,15 @@
 
 from RAM.ram import RAM
-from config import BALL_SIZE, BIN_SIZE, BIN_SIZE_IN_BYTES, BINS_LOCATION, DATA_SIZE, EPSILON, N, OVERFLOW_LOCATION
+from config import config
 from rebuild import Rebuild
 from utils.cuckoo_hash import CuckooHash
 
 
-a = Rebuild()
-a.rebuild()
-
-
+a = Rebuild(conf=config())
+a.cleanWriteMemory()
+# a.rebuild()
+# binsRam = RAM(OVERFLOW_LOCATION)
+# print(binsRam.readBall(BALL_SIZE*int(BIN_SIZE/512)+ BALL_SIZE*int(BIN_SIZE/2)*(NUMBER_OF_BINS_IN_OVERFLOW)))
 # print('RAM.RT_WRITE: ', RAM.RT_WRITE)
 # print('RAM.RT_READ: ', RAM.RT_READ)
 # print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)

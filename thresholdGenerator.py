@@ -1,14 +1,15 @@
-from config import EPSILON, N, NUMBER_OF_BINS
+from config import config
 import numpy as np
 
 class ThresholdGenerator:
-    def __init__(self) -> None:
+    def __init__(self, conf:config) -> None:
+        self.conf = conf
         self.reset()
         pass
     
     def reset(self):
-        self.b = NUMBER_OF_BINS
-        self.nPrime = N - int(N*EPSILON)
+        self.b = self.conf.NUMBER_OF_BINS
+        self.nPrime = self.conf.N - int(self.conf.N*self.conf.EPSILON)
     
     def generate(self):
         sample = np.random.binomial(self.nPrime, 1/self.b)

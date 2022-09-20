@@ -1,11 +1,12 @@
-from config import BALL_SIZE, BIN_SIZE, MAIN_KEY
+from config import config
 from utils.byte_operations import ByteOperations
 
 
 class ObliviousSort:
-    def __init__(self) -> None:
-        self.byte_operations = ByteOperations(MAIN_KEY)
-        self.dummy = b'\x00'*BALL_SIZE
+    def __init__(self, conf:config) -> None:
+        self.conf = conf
+        self.byte_operations = ByteOperations(self.conf.MAIN_KEY)
+        self.dummy = b'\x00'*self.conf.BALL_SIZE
 
     def splitToBinsByBit(self, balls, bit_num, number_of_bins):
         bin_zero = []
@@ -19,8 +20,8 @@ class ObliviousSort:
                 bin_one.append(ball)
             else:
                 bin_zero.append(ball)
-        bin_one = bin_one + [self.dummy] * (BIN_SIZE - len(bin_one))
-        bin_zero = bin_zero + [self.dummy] * (BIN_SIZE - len(bin_zero))
+        bin_one = bin_one + [self.dummy] * (self.conf.BIN_SIZE - len(bin_one))
+        bin_zero = bin_zero + [self.dummy] * (self.conf.BIN_SIZE - len(bin_zero))
         return bin_zero, bin_one
         
 

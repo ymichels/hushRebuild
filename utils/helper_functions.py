@@ -1,9 +1,8 @@
 import random
 import string
 
-from config import BALL_STATUS_POSITION
 
-def get_random_string(length, status=None):
+def get_random_string(length, BALL_STATUS_POSITION=None, status=None):
     # With combination of lower and upper case
     result_str = ''.join(random.choice(string.printable) for i in range(length))
     if status is not None:
