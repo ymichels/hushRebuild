@@ -6,8 +6,8 @@ from utils.cuckoo_hash import CuckooHash
 
 
 a = Rebuild(conf=config())
-a.cleanWriteMemory()
-# a.rebuild()
+# a.cleanWriteMemory()
+a.rebuild()
 # binsRam = RAM(OVERFLOW_LOCATION)
 # print(binsRam.readBall(BALL_SIZE*int(BIN_SIZE/512)+ BALL_SIZE*int(BIN_SIZE/2)*(NUMBER_OF_BINS_IN_OVERFLOW)))
 # print('RAM.RT_WRITE: ', RAM.RT_WRITE)

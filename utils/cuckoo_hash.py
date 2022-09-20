@@ -7,8 +7,8 @@ from utils.byte_operations import ByteOperations
 class CuckooHash:
     def __init__(self, conf:config) -> None:
         self.conf = conf
-        self.table1_byte_operations = ByteOperations(self.conf.CUCKOO_HASH_KEY_1)
-        self.table2_byte_operations = ByteOperations(self.conf.CUCKOO_HASH_KEY_2)
+        self.table1_byte_operations = ByteOperations(self.conf.CUCKOO_HASH_KEY_1, conf)
+        self.table2_byte_operations = ByteOperations(self.conf.CUCKOO_HASH_KEY_2, conf)
         self.dummy = b'\x00'*self.conf.BALL_SIZE
         self.table1 = [self.dummy]*self.conf.MU
         self.table2 = [self.dummy]*self.conf.MU
