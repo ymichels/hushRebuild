@@ -1,4 +1,3 @@
-from cmath import log
 import math
 from RAM.ram import RAM
 from collections import defaultdict
@@ -211,6 +210,7 @@ class Rebuild:
             dummies = [get_random_string(self.conf.BALL_SIZE, self.conf.BALL_STATUS_POSITION,self.conf.SPECIAL_DUMMY_STATUS) for i in range(self.conf.STASH_SIZE - len(cuckoo_hash.stash))]
             stashes += cuckoo_hash.stash + dummies
             if len(stashes) + self.conf.STASH_SIZE >= self.conf.BIN_SIZE:
+                print('OH NO!!!!!')
                 stashes = stashes + [self.dummy]*(self.conf.BIN_SIZE - len(stashes))
                 self.overflow_ram.writeChunks([(self.conf.OVERFLOW_SIZE + overflow_written*self.conf.BIN_SIZE_IN_BYTES, self.conf.OVERFLOW_SIZE + (overflow_written +1)*self.conf.BIN_SIZE_IN_BYTES )],stashes)
                 stashes = []
@@ -218,11 +218,11 @@ class Rebuild:
             current_bin_index += 1
         self.overflow_ram.writeChunks([(self.conf.OVERFLOW_SIZE + overflow_written*self.conf.BIN_SIZE_IN_BYTES, self.conf.OVERFLOW_SIZE + overflow_written*self.conf.BIN_SIZE_IN_BYTES + len(stashes) )],stashes)
         overflow_written += 1
-        #it is of course bad practise to change constants, but since the size of the overflow changes, is was necessary
+        #it is of course bad practise to change constants, but since the size of the overflow changes, it was necessary
         self.updateOverflowConfigs(overflow_written)
     
     def updateOverflowConfigs(self, num_of_added_bins):
-        self.conf.NUMBER_OF_BINS_IN_OVERFLOW += math.ceil((self.conf.EPSILON*self.conf.N +  num_of_added_bins*self.conf.BIN_SIZE)/self.conf.MU)
+        self.conf.NUMBER_OF_BINS_IN_OVERFLOW = math.ceil((self.conf.EPSILON*self.conf.N +  num_of_added_bins*self.conf.BIN_SIZE)/self.conf.MU)
         self.conf.OVERFLOW_SIZE += num_of_added_bins*self.conf.BIN_SIZE
         
 
@@ -231,7 +231,7 @@ class Rebuild:
         self._obliviousBallsIntoBinsFirstIteration(oblivious_sort)
         next_ram = self.overflow_ram
         current_ram = self.second_overflow_ram
-        for bit_num in range(1,math.ceil(log(self.conf.NUMBER_OF_BINS_IN_OVERFLOW,2))):
+        for bit_num in range(1,math.ceil(math.log(self.conf.NUMBER_OF_BINS_IN_OVERFLOW,2))):
             first_bin_index = 0
             for bin_index in range(math.ceil(self.conf.NUMBER_OF_BINS_IN_OVERFLOW/2)):
                 first_bin = current_ram.readChunks([(first_bin_index*self.conf.BIN_SIZE_IN_BYTES, (first_bin_index + 1)*self.conf.BIN_SIZE_IN_BYTES)])
