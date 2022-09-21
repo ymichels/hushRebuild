@@ -16,25 +16,23 @@ from utils.cuckoo_hash import CuckooHash
 # a.rebuild()
 # print('a.conf.NUMBER_OF_BINS_IN_OVERFLOW: ',a.conf.NUMBER_OF_BINS_IN_OVERFLOW)
 # print('STARTING OBLIVIOUS BALLS INTO BINS')
-# a.obliviousBallsIntoBins()
-#0 - 0,4  000 = 000,100
-#1 - 2    001 = 010
-#2 - 4    010 = 100
+#0 - 000 = 000
+#1 - 001 = 001
+#2 - 010 = 100
 #3 - 2,6  011 = 110,010
-
 #4
 #5 - 3  101 = 011
 #6 - 6 
 #7 - E
 
-conf= config()
-binsRam = RAM(conf.OVERFLOW_SECOND_LOCATION, conf)
-byte_operations = ByteOperations(conf.MAIN_KEY, conf)
-for i in range(100):
-    ball = binsRam.readBall(conf.BIN_SIZE_IN_BYTES*6 + conf.BALL_SIZE*i) 
-    print(ball)
-    bin = byte_operations.ballToPseudoRandomNumber(ball,8)
-    print(bin)
+# conf= config()
+# binsRam = RAM(conf.OVERFLOW_SECOND_LOCATION, conf)
+# byte_operations = ByteOperations(conf.MAIN_KEY, conf)
+# for i in range(100):
+#     ball = binsRam.readBall(conf.BIN_SIZE_IN_BYTES*8 + conf.BALL_SIZE*i) 
+#     print(ball)
+#     bin = byte_operations.ballToPseudoRandomNumber(ball,8)
+#     print(bin)
 
 
 # print(binsRam.readBall(BALL_SIZE*int(BIN_SIZE/512)+ BALL_SIZE*int(BIN_SIZE/2)*(NUMBER_OF_BINS_IN_OVERFLOW)))

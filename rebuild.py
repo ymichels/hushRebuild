@@ -55,7 +55,7 @@ class Rebuild:
         self.moveSecretLoad()
         self.tightCompaction()
         self.cuckooHashBins()
-        # self.obliviousBallsIntoBins()
+        self.obliviousBallsIntoBins()
         print('RAM.RT_WRITE: ', RAM.RT_WRITE)
         print('RAM.RT_READ: ', RAM.RT_READ)
         print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
@@ -218,7 +218,7 @@ class Rebuild:
             current_bin_index += 1
         self.overflow_ram.writeChunks([(self.conf.OVERFLOW_SIZE + overflow_written*self.conf.BIN_SIZE_IN_BYTES, self.conf.OVERFLOW_SIZE + overflow_written*self.conf.BIN_SIZE_IN_BYTES + len(stashes) )],stashes)
         overflow_written += 1
-        #it is of course bad practise to change constants, but since the size of the overflow changes, it was necessary
+        #it is of course bad practice to change constants, but since the size of the overflow changes, it was necessary
         self.updateOverflowConfigs(overflow_written)
     
     def updateOverflowConfigs(self, num_of_added_bins):
@@ -237,7 +237,7 @@ class Rebuild:
                 first_bin = current_ram.readChunks([(first_bin_index*self.conf.BIN_SIZE_IN_BYTES, (first_bin_index + 1)*self.conf.BIN_SIZE_IN_BYTES)])
                 second_bin = current_ram.readChunks([
                     ((first_bin_index + 2**bit_num)*self.conf.BIN_SIZE_IN_BYTES, (first_bin_index + (2**bit_num) + 1)*self.conf.BIN_SIZE_IN_BYTES)])
-                bin_zero, bin_one = oblivious_sort.splitToBinsByBit(first_bin + second_bin, bit_num, self.conf.NUMBER_OF_BINS_IN_OVERFLOW)
+                bin_zero, bin_one = oblivious_sort.splitToBinsByBit(first_bin + second_bin,math.ceil(math.log(self.conf.NUMBER_OF_BINS_IN_OVERFLOW,2)) - 1 - bit_num, self.conf.NUMBER_OF_BINS_IN_OVERFLOW)
                 
                 next_ram.writeChunks(
                     [(bin_index*2*self.conf.BIN_SIZE_IN_BYTES, (bin_index +1)*2*self.conf.BIN_SIZE_IN_BYTES)], bin_zero + bin_one)
@@ -255,7 +255,7 @@ class Rebuild:
         current_read_pos = 0
         for bin_index in range(math.ceil(self.conf.NUMBER_OF_BINS_IN_OVERFLOW/2)):
             balls = self.overflow_ram.readChunks([(current_read_pos, current_read_pos + self.conf.BIN_SIZE_IN_BYTES)])
-            bin_zero, bin_one = oblivious_sort.splitToBinsByBit(balls, 0, self.conf.NUMBER_OF_BINS_IN_OVERFLOW)
+            bin_zero, bin_one = oblivious_sort.splitToBinsByBit(balls, math.ceil(math.log(self.conf.NUMBER_OF_BINS_IN_OVERFLOW,2))-1, self.conf.NUMBER_OF_BINS_IN_OVERFLOW)
             self.second_overflow_ram.writeChunks(
                 [(2*current_read_pos, 2*current_read_pos + 2*self.conf.BIN_SIZE_IN_BYTES)], bin_zero + bin_one)
             current_read_pos += self.conf.BIN_SIZE_IN_BYTES
