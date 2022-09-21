@@ -253,10 +253,10 @@ class Rebuild:
     
     def _obliviousBallsIntoBinsFirstIteration(self,oblivious_sort):
         current_read_pos = 0
-        while current_read_pos < self.conf.OVERFLOW_SIZE:
+        for bin_index in range(math.ceil(self.conf.NUMBER_OF_BINS_IN_OVERFLOW/2)):
             balls = self.overflow_ram.readChunks([(current_read_pos, current_read_pos + self.conf.BIN_SIZE_IN_BYTES)])
             bin_zero, bin_one = oblivious_sort.splitToBinsByBit(balls, 0, self.conf.NUMBER_OF_BINS_IN_OVERFLOW)
             self.second_overflow_ram.writeChunks(
-                [(current_read_pos, current_read_pos + 2*self.conf.BIN_SIZE_IN_BYTES)], bin_zero + bin_one)
+                [(2*current_read_pos, 2*current_read_pos + 2*self.conf.BIN_SIZE_IN_BYTES)], bin_zero + bin_one)
             current_read_pos += self.conf.BIN_SIZE_IN_BYTES
         
