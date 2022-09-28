@@ -207,10 +207,9 @@ class Rebuild:
             
             # write the stash
             print('stash:', len(cuckoo_hash.stash))
-            dummies = [get_random_string(self.conf.BALL_SIZE, self.conf.BALL_STATUS_POSITION,self.conf.SPECIAL_DUMMY_STATUS) for i in range(self.conf.STASH_SIZE - len(cuckoo_hash.stash))]
+            dummies = [get_random_string(self.conf.BALL_SIZE, self.conf.BALL_STATUS_POSITION,self.conf.STASH_DUMMY_STATUS) for i in range(self.conf.STASH_SIZE - len(cuckoo_hash.stash))]
             stashes += cuckoo_hash.stash + dummies
             if len(stashes) + self.conf.STASH_SIZE >= self.conf.BIN_SIZE:
-                print('OH NO!!!!!')
                 stashes = stashes + [self.dummy]*(self.conf.BIN_SIZE - len(stashes))
                 self.overflow_ram.writeChunks([(self.conf.OVERFLOW_SIZE + overflow_written*self.conf.BIN_SIZE_IN_BYTES, self.conf.OVERFLOW_SIZE + (overflow_written +1)*self.conf.BIN_SIZE_IN_BYTES )],stashes)
                 stashes = []
