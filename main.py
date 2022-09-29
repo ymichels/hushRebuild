@@ -8,12 +8,13 @@ from utils.cuckoo_hash import CuckooHash
 
 # print(math.ceil(math.log(8,2)))
 
-# a = Rebuild(conf=config())
+a = Rebuild(conf=config())
 # a.cleanWriteMemory()
+# a.createReadMemory()
 
 
 # print('a.conf.NUMBER_OF_BINS_IN_OVERFLOW: ',a.conf.NUMBER_OF_BINS_IN_OVERFLOW)
-# a.rebuild()
+a.rebuild()
 # print('a.conf.NUMBER_OF_BINS_IN_OVERFLOW: ',a.conf.NUMBER_OF_BINS_IN_OVERFLOW)
 # print('STARTING OBLIVIOUS BALLS INTO BINS')
 #0 - 000 = 000

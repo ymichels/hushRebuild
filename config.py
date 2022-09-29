@@ -36,10 +36,10 @@ class config:
     
     
     BALL_STATUS_POSITION = 4
-    DUMMY_STATUS = '\x00'
-    DATA_STATUS = '\x01'
-    STASH_DATA_STATUS = '\x02'
-    STASH_DUMMY_STATUS = '\x03'
+    DUMMY_STATUS = b'\x00'
+    DATA_STATUS = b'\x01'
+    STASH_DATA_STATUS = b'\x02'
+    STASH_DUMMY_STATUS = b'\x03'
 # logn = 20
 # n = 2**logn
 # logLamb = 9
