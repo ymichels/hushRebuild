@@ -16,6 +16,8 @@ class CuckooHash:
 
     def insert_bulk(self,balls):
         for ball in balls:
+            if ball == self.dummy:
+                continue
             self.insert_ball(ball)
     
     def insert_ball(self,ball):

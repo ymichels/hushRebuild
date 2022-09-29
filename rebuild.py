@@ -19,6 +19,7 @@ class Rebuild:
         self.second_overflow_ram = RAM(conf.OVERFLOW_SECOND_LOCATION, conf)
         self.threshold_generator = ThresholdGenerator(conf)
         self.dummy = b'\x00'*conf.BALL_SIZE
+        self.local_stash = {}
 
     # This function creates random data for testing.
     def createReadMemory(self):
@@ -56,6 +57,7 @@ class Rebuild:
         self.tightCompaction()
         self.cuckooHashBins()
         self.obliviousBallsIntoBins()
+        self.cuckooHashOverflow()
         print('RAM.RT_WRITE: ', RAM.RT_WRITE)
         print('RAM.RT_READ: ', RAM.RT_READ)
         print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
@@ -185,13 +187,10 @@ class Rebuild:
         self.bins_ram.writeChunks(write_chunks,write_balls)
 
     def cuckooHashBins(self):
-        5+5
         current_bin_index = 0
-        iteration_num = 0
         overflow_written = 0
         stashes = []
         while current_bin_index < self.conf.NUMBER_OF_BINS:
-            print(current_bin_index)
             # get the bin
             bin_data = self.bins_ram.readChunks([(current_bin_index*self.conf.BIN_SIZE_IN_BYTES, (current_bin_index +1)*self.conf.BIN_SIZE_IN_BYTES )])
             capacity = int.from_bytes(bin_data[0], 'big', signed=False)
@@ -224,7 +223,6 @@ class Rebuild:
         self.conf.NUMBER_OF_BINS_IN_OVERFLOW = math.ceil((self.conf.EPSILON*self.conf.N +  num_of_added_bins*self.conf.BIN_SIZE)/self.conf.MU)
         self.conf.OVERFLOW_SIZE += num_of_added_bins*self.conf.BIN_SIZE
         
-
     def obliviousBallsIntoBins(self):
         oblivious_sort = ObliviousSort(self.conf)
         self._obliviousBallsIntoBinsFirstIteration(oblivious_sort)
@@ -247,8 +245,6 @@ class Rebuild:
         self.overflow_ram = current_ram
         self.second_overflow_ram = next_ram
         print('this is where the real overflow is stored:',self.overflow_ram.fileName)
-                
-        
     
     def _obliviousBallsIntoBinsFirstIteration(self,oblivious_sort):
         current_read_pos = 0
@@ -259,3 +255,25 @@ class Rebuild:
                 [(2*current_read_pos, 2*current_read_pos + 2*self.conf.BIN_SIZE_IN_BYTES)], bin_zero + bin_one)
             current_read_pos += self.conf.BIN_SIZE_IN_BYTES
         
+    def cuckooHashOverflow(self):
+        current_bin_index = 0
+        while current_bin_index < self.conf.NUMBER_OF_BINS_IN_OVERFLOW:
+            # get the bin
+            bin_data = self.overflow_ram.readChunks([(current_bin_index*self.conf.BIN_SIZE_IN_BYTES, (current_bin_index +1)*self.conf.BIN_SIZE_IN_BYTES )])
+
+            # generate the cuckoo hash
+            cuckoo_hash = CuckooHash(self.conf)
+            cuckoo_hash.insert_bulk(bin_data)
+
+            # write the data
+            hash_tables = cuckoo_hash.table1 + cuckoo_hash.table2
+            self.overflow_ram.writeChunks([(current_bin_index*self.conf.BIN_SIZE_IN_BYTES, (current_bin_index +1)*self.conf.BIN_SIZE_IN_BYTES )],hash_tables)
+            
+            # write the stash
+            print('stash:', len(cuckoo_hash.stash))
+            self.addToLocalStash(cuckoo_hash.stash)
+            current_bin_index += 1
+    
+    def addToLocalStash(self, balls):
+        for ball in balls:
+            self.local_stash[ball[self.conf.BALL_STATUS_POSITION+1:]] = ball
