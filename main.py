@@ -8,14 +8,27 @@ from utils.cuckoo_hash import CuckooHash
 
 whole_ball = b's862\x01UQ/&$9ZS>xO'
 key = b'UQ/&$9ZS>xO'
+
+memory_used = 1_000_000_000_000_000
+memory_stored = ((memory_used/2)/3.5)
+N = memory_stored/100
+MU = 30*(9**3)
+number_of_bins = N/MU
+number_of_bins_in_overflow = (number_of_bins/9) + (number_of_bins*9)/MU
+balls_in_local_storage = number_of_bins_in_overflow*9
+local_memory_size = balls_in_local_storage*100 + MU*2*100
+print('memory_used: ', memory_used)
+print('memory_stored: ', memory_stored)
+print('N: ', N)
+print('local_memory_size: ', local_memory_size)
 # print(math.ceil(math.log(8,2)))
 
-a = Rebuild(conf=config())
+# a = Rebuild(conf=config())
 # a.cleanWriteMemory()
 # a.createReadMemory()
-a.overflow_ram = a.second_overflow_ram
+# a.overflow_ram = a.second_overflow_ram
 
-print(a.lookup(key))
+# print(a.lookup(key))
 # print('a.conf.NUMBER_OF_BINS_IN_OVERFLOW: ',a.conf.NUMBER_OF_BINS_IN_OVERFLOW)
 # a.rebuild()
 # print('a.conf.NUMBER_OF_BINS_IN_OVERFLOW: ',a.conf.NUMBER_OF_BINS_IN_OVERFLOW)
