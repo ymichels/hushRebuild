@@ -6,8 +6,8 @@ from rebuild import Rebuild
 from utils.byte_operations import ByteOperations
 from utils.cuckoo_hash import CuckooHash
 
-whole_ball = b'\nIj#\x01$I!a)cz(3Z!'
-key = b'$I!a)cz(3Z!'
+whole_ball = b's862\x01UQ/&$9ZS>xO'
+key = b'UQ/&$9ZS>xO'
 # print(math.ceil(math.log(8,2)))
 
 a = Rebuild(conf=config())

@@ -280,9 +280,10 @@ class Rebuild:
     
     def lookup(self, key):
         # look in local stash
+        result_ball = self.dummy
         ball = self.local_stash.get(key)
         if ball != None:
-            return ball
+            result_ball = ball
         
         table1_location, table2_location = CuckooHash(self.conf).get_possible_addresses(key)
         
@@ -292,12 +293,17 @@ class Rebuild:
         # table 1
         ball = self.overflow_ram.readBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location) 
         if ball[self.conf.BALL_STATUS_POSITION+1:] == key:
-            return ball
+            result_ball = ball
         
         # table 2
         ball = self.overflow_ram.readBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location)) 
         if ball[self.conf.BALL_STATUS_POSITION+1:] == key:
-            return ball
+            result_ball = ball
+        
+        
+        # if the ball was found with a standard data status, then continue with dummy lookups
+        if result_ball[self.conf.BALL_STATUS_POSITION] == self.conf.DATA_STATUS:
+            key = get_random_string(self.conf.BALL_SIZE - self.conf.BALL_STATUS_POSITION -1)
         
         # look in bins
         bin_num = self.byte_operations.keyToPseudoRandomNumber(key, self.conf.NUMBER_OF_BINS)
@@ -305,10 +311,12 @@ class Rebuild:
         # table 1
         ball = self.bins_ram.readBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location) 
         if ball[self.conf.BALL_STATUS_POSITION+1:] == key:
-            return ball
+            result_ball =  ball
         
         # table 2
         ball = self.bins_ram.readBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location)) 
         if ball[self.conf.BALL_STATUS_POSITION+1:] == key:
-            return ball
+            result_ball =  ball
+        
+        return result_ball
         
