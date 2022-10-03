@@ -43,4 +43,7 @@ class CuckooHash:
                 break
             seen_locations.append(location)
             
-                
+    def get_possible_addresses(self, key):
+        table1_location = self.table1_byte_operations.keyToPseudoRandomNumber(key, self.conf.MU)
+        table2_location = self.table2_byte_operations.keyToPseudoRandomNumber(key, self.conf.MU)
+        return table1_location, table2_location

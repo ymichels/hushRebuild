@@ -6,15 +6,18 @@ from rebuild import Rebuild
 from utils.byte_operations import ByteOperations
 from utils.cuckoo_hash import CuckooHash
 
+whole_ball = b'\nIj#\x01$I!a)cz(3Z!'
+key = b'$I!a)cz(3Z!'
 # print(math.ceil(math.log(8,2)))
 
 a = Rebuild(conf=config())
 # a.cleanWriteMemory()
 # a.createReadMemory()
+a.overflow_ram = a.second_overflow_ram
 
-
+print(a.lookup(key))
 # print('a.conf.NUMBER_OF_BINS_IN_OVERFLOW: ',a.conf.NUMBER_OF_BINS_IN_OVERFLOW)
-a.rebuild()
+# a.rebuild()
 # print('a.conf.NUMBER_OF_BINS_IN_OVERFLOW: ',a.conf.NUMBER_OF_BINS_IN_OVERFLOW)
 # print('STARTING OBLIVIOUS BALLS INTO BINS')
 #0 - 000 = 000
@@ -27,7 +30,7 @@ a.rebuild()
 #7 - E
 
 # conf= config()
-# binsRam = RAM(conf.OVERFLOW_SECOND_LOCATION, conf)
+# binsRam = RAM(conf.DATA_LOCATION, conf)
 # byte_operations = ByteOperations(conf.MAIN_KEY, conf)
 # for i in range(100):
 #     ball = binsRam.readBall(conf.BIN_SIZE_IN_BYTES*8 + conf.BALL_SIZE*i) 
