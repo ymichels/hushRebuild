@@ -6,21 +6,21 @@ from rebuild import Rebuild
 from utils.byte_operations import ByteOperations
 from utils.cuckoo_hash import CuckooHash
 
-whole_ball = b's862\x01UQ/&$9ZS>xO'
-key = b'UQ/&$9ZS>xO'
+# whole_ball = b's862\x01UQ/&$9ZS>xO'
+# key = b'UQ/&$9ZS>xO'
 
-memory_used = 1_000_000_000_000_000
-memory_stored = ((memory_used/2)/3.5)
-N = memory_stored/100
-MU = 30*(9**3)
-number_of_bins = N/MU
-number_of_bins_in_overflow = (number_of_bins/9) + (number_of_bins*9)/MU
-balls_in_local_storage = number_of_bins_in_overflow*9
-local_memory_size = balls_in_local_storage*100 + MU*2*100
-print('memory_used: ', memory_used)
-print('memory_stored: ', memory_stored)
-print('N: ', N)
-print('local_memory_size: ', local_memory_size)
+# memory_used = 1_000_000_000_000_000
+# memory_stored = ((memory_used/2)/3.5)
+# N = memory_stored/100
+# MU = 30*(9**3)
+# number_of_bins = N/MU
+# number_of_bins_in_overflow = (number_of_bins/9) + (number_of_bins*9)/MU
+# balls_in_local_storage = number_of_bins_in_overflow*9
+# local_memory_size = balls_in_local_storage*100 + MU*2*100
+# print('memory_used: ', memory_used)
+# print('memory_stored: ', memory_stored)
+# print('N: ', N)
+# print('local_memory_size: ', local_memory_size)
 # print(math.ceil(math.log(8,2)))
 
 # a = Rebuild(conf=config())
@@ -42,14 +42,15 @@ print('local_memory_size: ', local_memory_size)
 #6 - 6 
 #7 - E
 
-# conf= config()
-# binsRam = RAM(conf.DATA_LOCATION, conf)
-# byte_operations = ByteOperations(conf.MAIN_KEY, conf)
-# for i in range(100):
-#     ball = binsRam.readBall(conf.BIN_SIZE_IN_BYTES*8 + conf.BALL_SIZE*i) 
-#     print(ball)
-#     bin = byte_operations.ballToPseudoRandomNumber(ball,8)
-#     print(bin)
+conf= config()
+binsRam = RAM(conf.OVERFLOW_SECOND_LOCATION, conf)
+byte_operations = ByteOperations(conf.MAIN_KEY, conf)
+for i in range(100):
+    ball = binsRam.readBall(conf.BIN_SIZE_IN_BYTES*8 + conf.BALL_SIZE*i) 
+    if ball != b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00':
+        print(ball)
+        bin = byte_operations.ballToPseudoRandomNumber(ball,8)
+        print(bin)
 
 
 # print(binsRam.readBall(BALL_SIZE*int(BIN_SIZE/512)+ BALL_SIZE*int(BIN_SIZE/2)*(NUMBER_OF_BINS_IN_OVERFLOW)))

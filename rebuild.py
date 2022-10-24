@@ -43,7 +43,8 @@ class Rebuild:
         
         #Cleaning the overflow pile
         current_write = 0
-        while current_write < self.conf.OVERFLOW_SIZE*2:
+        FINAL_OVERFLOW_SIZE = 2**math.ceil(math.log(self.conf.OVERFLOW_SIZE + self.conf.LOG_LAMBDA*self.conf.NUMBER_OF_BINS,2))
+        while current_write < FINAL_OVERFLOW_SIZE*2:
             self.overflow_ram.writeChunks(
                 [(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)], empty_bin)
             self.second_overflow_ram.writeChunks(
@@ -220,7 +221,7 @@ class Rebuild:
         self.updateOverflowConfigs(overflow_written)
     
     def updateOverflowConfigs(self, num_of_added_bins):
-        self.conf.NUMBER_OF_BINS_IN_OVERFLOW = math.ceil((self.conf.EPSILON*self.conf.N +  num_of_added_bins*self.conf.BIN_SIZE)/self.conf.MU)
+        self.conf.NUMBER_OF_BINS_IN_OVERFLOW = 2**math.ceil(math.log(self.conf.NUMBER_OF_BINS_IN_OVERFLOW + math.ceil((num_of_added_bins*self.conf.BIN_SIZE)/self.conf.MU),2))
         self.conf.OVERFLOW_SIZE += num_of_added_bins*self.conf.BIN_SIZE
         
     def obliviousBallsIntoBins(self):
