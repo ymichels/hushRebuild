@@ -1,16 +1,20 @@
 from config import config
-
-
+import os
+from pathlib import Path
 class RAM:
     BALL_READ = 0
     BALL_WRITE = 0
     RT_READ = 0
     RT_WRITE = 0
     
-    def __init__(self, fileName, conf:config) -> None:
+    def __init__(self, file_path, conf:config) -> None:
         self.conf = conf
-        self.fileName = fileName
-        self.file = open(fileName, 'r+b')
+        output_file = Path(file_path)
+        if not os.path.isfile(file_path):
+            output_file.parent.mkdir(exist_ok=True, parents=True)
+            output_file.write_text("")
+        # os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        self.file = open(file_path, 'r+b')
 
 
     def readBall(self, location):

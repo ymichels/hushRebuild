@@ -18,11 +18,11 @@ class config:
     LOCAL_MEMORY_SIZE = BIN_SIZE_IN_BYTES
     NUMBER_OF_BINS_IN_OVERFLOW = math.ceil(EPSILON*N/MU)
 
-    DATA_LOCATION = 'data.txt'
-    BINS_LOCATION = 'bins.txt'
-    OVERFLOW_LOCATION = 'overflow.txt'
+    DATA_LOCATION = 'files_folder/data.txt'
+    BINS_LOCATION = 'files_folder/bins.txt'
+    OVERFLOW_LOCATION = 'files_folder/overflow.txt'
     # This is for the oblivious balls into bins so that the bins would not be overriden.
-    OVERFLOW_SECOND_LOCATION = 'second_overflow.txt'
+    OVERFLOW_SECOND_LOCATION = 'files_folder/second_overflow.txt'
 
     BALL_READ = 0
     BALL_WRITE = 0
