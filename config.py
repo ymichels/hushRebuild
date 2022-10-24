@@ -24,12 +24,6 @@ class config:
     # This is for the oblivious balls into bins so that the bins would not be overriden.
     OVERFLOW_SECOND_LOCATION = 'files_folder/second_overflow.txt'
 
-    BALL_READ = 0
-    BALL_WRITE = 0
-    RT_READ = 0
-    RT_WRITE = 0
-
-
     MAIN_KEY = b'Sixteen byte key'
     CUCKOO_HASH_KEY_1 = b'Cuckoo hash key1'
     CUCKOO_HASH_KEY_2 = b'Cuckoo hash key2'
@@ -40,6 +34,19 @@ class config:
     DATA_STATUS = b'\x01'
     STASH_DATA_STATUS = b'\x02'
     STASH_DUMMY_STATUS = b'\x03'
+    
+    def __init__(self, N):
+        self.N = N
+        self.NUMBER_OF_BINS = math.ceil(N/self.MU)
+        self.DATA_SIZE = N*self.BALL_SIZE
+        self.OVERFLOW_SIZE = math.ceil(self.DATA_SIZE*self.EPSILON)
+        self.NUMBER_OF_BINS_IN_OVERFLOW = math.ceil(self.EPSILON*N/self.MU)
+        self.DATA_LOCATION = '{}/data.txt'.format(self.NUMBER_OF_BINS)
+        self.BINS_LOCATION = '{}/bins.txt'.format(self.NUMBER_OF_BINS)
+        self.OVERFLOW_LOCATION = '{}/overflow.txt'.format(self.NUMBER_OF_BINS)
+        # This is for the oblivious balls into bins so that the bins would not be overriden.
+        self.OVERFLOW_SECOND_LOCATION = '{}/second_overflow.txt'.format(self.NUMBER_OF_BINS)
+        
 # logn = 20
 # n = 2**logn
 # logLamb = 9

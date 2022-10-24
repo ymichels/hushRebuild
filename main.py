@@ -1,8 +1,9 @@
 
 import math
+from ORAM import ORAM
 from RAM.ram import RAM
 from config import config
-from rebuild import Rebuild
+from hashTable import HashTable
 from utils.byte_operations import ByteOperations
 from utils.cuckoo_hash import CuckooHash
 
@@ -22,8 +23,8 @@ from utils.cuckoo_hash import CuckooHash
 # print('N: ', N)
 # print('local_memory_size: ', local_memory_size)
 # print(math.ceil(math.log(8,2)))
-
-a = Rebuild(conf=config())
+# ORAM(2**10*config.MU + 100)
+# a = HashTable(conf=config())
 # a.cleanWriteMemory()
 # a.createReadMemory()
 # a.overflow_ram = a.second_overflow_ram
