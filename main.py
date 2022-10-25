@@ -7,8 +7,8 @@ from hashTable import HashTable
 from utils.byte_operations import ByteOperations
 from utils.cuckoo_hash import CuckooHash
 
-# whole_ball = b's862\x01UQ/&$9ZS>xO'
-# key = b'UQ/&$9ZS>xO'
+whole_ball = b')Tpb\x01HU_&uv\ts?rb'
+key = b'HU_&uv\ts?rb'
 
 # memory_used = 1_000_000_000_000_000
 # memory_stored = ((memory_used/2)/3.5)
@@ -24,12 +24,12 @@ from utils.cuckoo_hash import CuckooHash
 # print('local_memory_size: ', local_memory_size)
 # print(math.ceil(math.log(8,2)))
 # ORAM(2**10*config.MU + 100)
-# a = HashTable(conf=config())
+a = HashTable(conf=config())
 # a.cleanWriteMemory()
 # a.createReadMemory()
 # a.overflow_ram = a.second_overflow_ram
 
-# print(a.lookup(key))
+print(a.lookup(key))
 # print('a.conf.NUMBER_OF_BINS_IN_OVERFLOW: ',a.conf.NUMBER_OF_BINS_IN_OVERFLOW)
 # a.rebuild()
 # print('a.conf.NUMBER_OF_BINS_IN_OVERFLOW: ',a.conf.NUMBER_OF_BINS_IN_OVERFLOW)
@@ -44,7 +44,7 @@ from utils.cuckoo_hash import CuckooHash
 #7 - E
 
 # conf= config()
-# binsRam = RAM(conf.OVERFLOW_SECOND_LOCATION, conf)
+# binsRam = RAM(conf.DATA_LOCATION, conf)
 # byte_operations = ByteOperations(conf.MAIN_KEY, conf)
 # for i in range(100):
 #     ball = binsRam.readBall(conf.BIN_SIZE_IN_BYTES*8 + conf.BALL_SIZE*i) 
