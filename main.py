@@ -25,10 +25,10 @@ key = b'HU_&uv\ts?rb'
 # print(math.ceil(math.log(8,2)))
 # ORAM(2**10*config.MU + 100)
 a = HashTable(conf=config())
-# a.cleanWriteMemory()
+a.cleanWriteMemory()
 # a.createReadMemory()
 # a.overflow_ram = a.second_overflow_ram
-
+a.rebuild()
 print(a.lookup(key))
 # print('a.conf.NUMBER_OF_BINS_IN_OVERFLOW: ',a.conf.NUMBER_OF_BINS_IN_OVERFLOW)
 # a.rebuild()

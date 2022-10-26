@@ -9,6 +9,7 @@ class RAM:
     
     def __init__(self, file_path, conf:config) -> None:
         self.conf = conf
+        self.file_path = file_path
         output_file = Path(file_path)
         if not os.path.isfile(file_path):
             output_file.parent.mkdir(exist_ok=True, parents=True)

@@ -56,7 +56,7 @@ class HashTable:
     def rebuild(self):
         self.ballsIntoBins()
         self.moveSecretLoad()
-        self.tightCompaction()
+        self.tightCompaction(self.conf.NUMBER_OF_BINS_IN_OVERFLOW, self.overflow_ram)
         self.cuckooHashBins()
         self.obliviousBallsIntoBins()
         self.cuckooHashOverflow()
@@ -66,24 +66,27 @@ class HashTable:
         print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
         print('RAM.BALL_READ: ', RAM.BALL_READ)
         
-    def tightCompaction(self):
-        offset = self.conf.NUMBER_OF_BINS_IN_OVERFLOW/2
-        distance_from_center = 1/2
+    def binsTightCompaction(self):
+        # stash needs taken care of
+        self.tightCompaction(self.conf.NUMBER_OF_BINS, self.bins_ram)
+        
+    def tightCompaction(self, NUMBER_OF_BINS, ram):
+        offset = NUMBER_OF_BINS
+        distance_from_center = 1
         midLocation = int(self.conf.EPSILON*self.conf.N)*self.conf.BALL_SIZE
         
         while offset >= 1:
             start_loc = int(midLocation - midLocation*distance_from_center)
-            end_loc = midLocation + midLocation*distance_from_center
-            self._tightCompaction(start_loc, end_loc, int(offset))
+            self._tightCompaction(start_loc, ram, int(offset))
             
             offset /= 2
             distance_from_center /=2
     
-    def _tightCompaction(self, startLoc, endLoc, offset):
+    def _tightCompaction(self, start_loc, ram, offset):
         for i in range(offset):
-            balls = self.byte_operations.readTransposed(self.overflow_ram, offset, startLoc + i*self.conf.BALL_SIZE, 2*self.conf.MU)
+            balls = self.byte_operations.readTransposed(ram, offset, start_loc + i*self.conf.BALL_SIZE, 2*self.conf.MU)
             balls = self.localTightCompaction(balls)
-            self.byte_operations.writeTransposed(self.overflow_ram, balls, offset, startLoc + i*self.conf.BALL_SIZE)
+            self.byte_operations.writeTransposed(ram, balls, offset, start_loc + i*self.conf.BALL_SIZE)
         
     def localTightCompaction(self, balls):
         dummies = []
@@ -247,7 +250,7 @@ class HashTable:
             next_ram, current_ram = current_ram, next_ram
         self.overflow_ram = current_ram
         self.second_overflow_ram = next_ram
-        print('this is where the real overflow is stored:',self.overflow_ram.fileName)
+        print('this is where the real overflow is stored:',self.overflow_ram.file_path)
     
     def _obliviousBallsIntoBinsFirstIteration(self,oblivious_sort):
         current_read_pos = 0
@@ -323,4 +326,4 @@ class HashTable:
             result_ball =  ball
         
         return result_ball
-    
+   

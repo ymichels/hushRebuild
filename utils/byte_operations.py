@@ -40,3 +40,13 @@ class ByteOperations:
     
     def changeBallStatus(self, ball, status):
         return ball[:self.conf.BALL_STATUS_POSITION] + status + ball[1 + self.conf.BALL_STATUS_POSITION:]
+    
+    def ballsToDictionary(self, balls):
+        dic = {}
+        for ball in balls:
+            dic[ball[1 + self.conf.BALL_STATUS_POSITION:]] = ball
+        return dic
+            
+            
+            
+            
