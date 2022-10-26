@@ -111,5 +111,4 @@ class ORAM:
         
             
 # What's missing:
-# 1. when lookup occurs - write dummy in it's stead.
 # 2. implement intersperse - mind the gaps filled with dummies.
