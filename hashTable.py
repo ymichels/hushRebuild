@@ -291,6 +291,7 @@ class HashTable:
         ball = self.local_stash.get(key)
         if ball != None:
             result_ball = ball
+            del self.local_stash[key]
         
         table1_location, table2_location = CuckooHash(self.conf).get_possible_addresses(key)
         
@@ -301,12 +302,17 @@ class HashTable:
         ball = self.overflow_ram.readBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location) 
         if ball[self.conf.BALL_STATUS_POSITION+1:] == key:
             result_ball = ball
+            self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, self.dummy)
+        else:
+            self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, ball)
         
         # table 2
         ball = self.overflow_ram.readBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location)) 
         if ball[self.conf.BALL_STATUS_POSITION+1:] == key:
             result_ball = ball
-        
+            self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), self.dummy)
+        else:
+            self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), ball)
         
         # if the ball was found with a standard data status, then continue with dummy lookups
         if result_ball[self.conf.BALL_STATUS_POSITION] == self.conf.DATA_STATUS:
@@ -318,12 +324,18 @@ class HashTable:
         # table 1
         ball = self.bins_ram.readBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location) 
         if ball[self.conf.BALL_STATUS_POSITION+1:] == key:
-            result_ball =  ball
+            result_ball = ball
+            self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, self.dummy) 
+        else:
+            self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, ball) 
         
         # table 2
         ball = self.bins_ram.readBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location)) 
         if ball[self.conf.BALL_STATUS_POSITION+1:] == key:
-            result_ball =  ball
+            result_ball = ball
+            self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), self.dummy)
+        else:
+            self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), ball)
         
         return result_ball
 
