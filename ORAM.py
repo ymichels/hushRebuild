@@ -89,10 +89,6 @@ class ORAM:
                 current_table.data_ram = previous_table.bins_ram
                 current_table.rebuild()
                 return
-        ### what is required:
-        #V 1. if current is the first level - copy the local stash after MU balls in the bins location, and intersperse (mark as not built)
-        #  2. if current is built, copy the previous level after N balls in the bins memory and intersperse (mark as not built)
-        #  3. if current is not built, change the data ram to the previous layer bins ram and rebuild (no real need to change the data ram is there?)
                 
     
     def intersperseStashAndLevelOne(self):
@@ -114,6 +110,6 @@ class ORAM:
         
         
             
-    
-    
-    
+# What's missing:
+# 1. when lookup occurs - write dummy in it's stead.
+# 2. implement intersperse - mind the gaps filled with dummies.
