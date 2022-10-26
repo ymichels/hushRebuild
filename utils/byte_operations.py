@@ -38,6 +38,9 @@ class ByteOperations:
             chunks.append((start + i*offset*self.conf.BALL_SIZE, start + i*offset*self.conf.BALL_SIZE + self.conf.BALL_SIZE))
         return ram.readChunks(chunks)
     
+    def changeBallsStatus(self, balls, status):
+        return [self.changeBallStatus(ball, status) for ball in balls]
+    
     def changeBallStatus(self, ball, status):
         return ball[:self.conf.BALL_STATUS_POSITION] + status + ball[1 + self.conf.BALL_STATUS_POSITION:]
     

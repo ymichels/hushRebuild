@@ -158,6 +158,7 @@ class HashTable:
         while current_read_pos < self.conf.DATA_SIZE:
             balls = self.data_ram.readChunks(
                 [(current_read_pos, current_read_pos + self.conf.LOCAL_MEMORY_SIZE)])
+            balls = self.byte_operations.changeBallsStatus(balls, self.conf.DATA_STATUS)
             self._ballsIntoBins(balls)
             current_read_pos += self.conf.LOCAL_MEMORY_SIZE
 
@@ -283,8 +284,7 @@ class HashTable:
     def addToLocalStash(self, balls):
         for ball in balls:
             self.local_stash[ball[self.conf.BALL_STATUS_POSITION+1:]] = ball
-    
-    
+       
     def lookup(self, key):
         # look in local stash
         result_ball = self.dummy
@@ -326,4 +326,17 @@ class HashTable:
             result_ball =  ball
         
         return result_ball
-   
+
+    # this function copies the previous layer into the current layer for intersperse
+    def copyToEndOfBins(self, second_data_ram:RAM):
+        current_read_pos = 0
+        while current_read_pos < self.conf.DATA_SIZE:
+            balls = second_data_ram.readChunks(
+                [(current_read_pos, current_read_pos + self.conf.LOCAL_MEMORY_SIZE)])
+            balls = self.byte_operations.changeBallsStatus(balls, self.conf.SECOND_DATA_STATUS)
+            second_data_ram.writeChunks(
+                [(self.conf.DATA_SIZE + current_read_pos, self.conf.DATA_SIZE + current_read_pos + self.conf.LOCAL_MEMORY_SIZE)], balls)
+            current_read_pos += self.conf.LOCAL_MEMORY_SIZE
+    
+    def intersperse(self):
+        5+5

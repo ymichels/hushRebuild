@@ -7,6 +7,10 @@ from hashTable import HashTable
 from utils.byte_operations import ByteOperations
 from utils.cuckoo_hash import CuckooHash
 
+
+### ATTENTION - if there are preformance issues, you can replace the *[self.dummy] arrays with something more efficient
+
+
 whole_ball = b')Tpb\x01HU_&uv\ts?rb'
 key = b'HU_&uv\ts?rb'
 

@@ -76,11 +76,33 @@ class ORAM:
                 table.binsTightCompaction()
             else:
                 break
+        
+        self.intersperseStashAndLevelOne()
+        for i in range(1, len(self.tables[1:])):
+            previous_table = self.tables[i-1]
+            current_table = self.tables[i]
+            if current_table.is_built:
+                current_table.copyToEndOfBins(previous_table.bins_ram)
+                current_table.intersperse()
+                current_table.is_built = False
+            else:
+                current_table.data_ram = previous_table.bins_ram
+                current_table.rebuild()
+                return
         ### what is required:
-        #  1. if current is the first level - copy the local stash after MU balls in the bins location, and intersperse (mark as not built)
+        #V 1. if current is the first level - copy the local stash after MU balls in the bins location, and intersperse (mark as not built)
         #  2. if current is built, copy the previous level after N balls in the bins memory and intersperse (mark as not built)
         #  3. if current is not built, change the data ram to the previous layer bins ram and rebuild (no real need to change the data ram is there?)
                 
+    
+    def intersperseStashAndLevelOne(self):
+        hash_table_one = self.tables[0]
+        stash_balls = list(self.local_stash.values())
+        stash_balls = hash_table_one.byte_operations.changeBallsStatus(stash_balls, self.conf.SECOND_DATA_STATUS)
+        stash_balls.extend((hash_table_one.conf.MU - len(stash_balls))*[self.dummy])
+        hash_table_one.bins_ram.writeChunks([hash_table_one.conf.MU, 2*hash_table_one.conf.MU], stash_balls)
+        hash_table_one.intersperse()
+        hash_table_one.is_built = False
     
     def rebuildLevelOne(self):
         hash_table_one = self.tables[0]
