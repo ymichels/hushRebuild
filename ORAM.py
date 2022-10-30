@@ -114,7 +114,7 @@ class ORAM:
         hash_table_one = self.tables[0]
         cuckoo_hash = CuckooHash(hash_table_one.conf)
         cuckoo_hash.insert_bulk(list(self.local_stash.values()))
-        hash_table_one.bins_ram.writeChunks([0, hash_table_one.conf.BIN_SIZE_IN_BYTES], cuckoo_hash.table1 + cuckoo_hash.table2)
+        hash_table_one.bins_ram.writeChunks([[0, hash_table_one.conf.BIN_SIZE_IN_BYTES]], cuckoo_hash.table1 + cuckoo_hash.table2)
         hash_table_one.local_stash = hash_table_one.byte_operations.ballsToDictionary(cuckoo_hash.stash)
         hash_table_one.is_built = True
         
