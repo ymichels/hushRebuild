@@ -18,7 +18,7 @@ class ByteOperations:
         if capacity_ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] != self.conf.DUMMY_STATUS:
             return 0
         else:
-            int.from_bytes(capacity_ball, 'big', signed=False)
+            return int.from_bytes(capacity_ball, 'big', signed=False)
         
         
     def ballToPseudoRandomNumber(self, ball,limit = -1):
