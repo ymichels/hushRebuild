@@ -73,6 +73,7 @@ class ORAM:
             self.rebuild()
     
     def rebuild(self):
+        self.read_count = 0
         if not self.tables[0].is_built:
             self.rebuildLevelOne()
             return

@@ -18,7 +18,7 @@ a = ORAM(2**5*config.MU)
 # a.tables[-1].cleanWriteMemory()
 # a.tables[-1].createReadMemory()
 
-a.initial_build('testing_data.txt')
+# a.initial_build('testing_data.txt')
 
 data_ram = RAM('testing_data.txt', a.conf)
 for i in range(2**5*config.MU + 5):
