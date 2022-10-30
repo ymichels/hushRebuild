@@ -28,14 +28,19 @@ class config:
     CUCKOO_HASH_KEY_1 = b'Cuckoo hash key1'
     CUCKOO_HASH_KEY_2 = b'Cuckoo hash key2'
     
-    
+    # the balls structure:  DATA || STATUS || KEY
     BALL_STATUS_POSITION = 4
     DUMMY_STATUS = b'\x00'
     DATA_STATUS = b'\x01'
     STASH_DATA_STATUS = b'\x02'
     STASH_DUMMY_STATUS = b'\x03'
+    
     # we require a second data status for perposes of intersperse
     SECOND_DATA_STATUS = b'\x04'
+    
+    # when adding a dummy that will behave as a real ball until the final layer needs to be rebuilt - when it'll be removed 
+    DUMMY_DATA_STATUS = b'\x05'
+    DUMMY_SECOND_DATA_STATUS = b'\x06'
     
     def __init__(self, N=None):
         if N == None:

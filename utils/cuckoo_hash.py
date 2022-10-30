@@ -36,8 +36,8 @@ class CuckooHash:
                 break
             ball = evicted_ball
             if len(seen_locations) > 2*self.conf.MU:
-                stash_ball = self.table1_byte_operations.changeBallStatus(ball, self.conf.STASH_DATA_STATUS)
-                self.stash.append(stash_ball)
+                # stash_ball = self.table1_byte_operations.changeBallStatus(ball, self.conf.STASH_DATA_STATUS)
+                self.stash.append(ball)
                 if len(self.stash) > self.conf.STASH_SIZE:
                     raise Exception("Error, Cuckoo hash stash is full")
                 break

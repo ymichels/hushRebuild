@@ -30,6 +30,11 @@ class HashTable:
             self.data_ram.writeChunks(
                 [(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)], random_bin)
             current_write += self.conf.BIN_SIZE_IN_BYTES
+        dummy_bin = [self.dummy]*self.conf.BIN_SIZE
+        while current_write < 2*self.conf.DATA_SIZE:
+            self.data_ram.writeChunks(
+                [(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)], dummy_bin)
+            current_write += self.conf.BIN_SIZE_IN_BYTES
     
     # This function prepares the bins for writing.
     # It fills the bins with empty values.
@@ -66,33 +71,35 @@ class HashTable:
         print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
         print('RAM.BALL_READ: ', RAM.BALL_READ)
         
-    def binsTightCompaction(self):
+    def binsTightCompaction(self, dummy_status = None):
         # stash needs taken care of
-        self.tightCompaction(self.conf.NUMBER_OF_BINS, self.bins_ram)
+        self.tightCompaction(self.conf.NUMBER_OF_BINS, self.bins_ram, dummy_status)
         
-    def tightCompaction(self, NUMBER_OF_BINS, ram):
+    def tightCompaction(self, NUMBER_OF_BINS, ram, dummy_status = None):
+        if dummy_status == None:
+            dummy_status = self.conf.DUMMY_STATUS
         offset = NUMBER_OF_BINS
         distance_from_center = 1
         midLocation = int(self.conf.EPSILON*self.conf.N)*self.conf.BALL_SIZE
         
         while offset >= 1:
             start_loc = int(midLocation - midLocation*distance_from_center)
-            self._tightCompaction(start_loc, ram, int(offset))
+            self._tightCompaction(start_loc, ram, int(offset), dummy_status)
             
             offset /= 2
             distance_from_center /=2
     
-    def _tightCompaction(self, start_loc, ram, offset):
+    def _tightCompaction(self, start_loc, ram, offset, dummy_status):
         for i in range(offset):
             balls = self.byte_operations.readTransposed(ram, offset, start_loc + i*self.conf.BALL_SIZE, 2*self.conf.MU)
-            balls = self.localTightCompaction(balls)
+            balls = self.localTightCompaction(balls, dummy_status)
             self.byte_operations.writeTransposed(ram, balls, offset, start_loc + i*self.conf.BALL_SIZE)
         
-    def localTightCompaction(self, balls):
+    def localTightCompaction(self, balls, dummy_status):
         dummies = []
         result = []
         for ball in balls:
-            if ball == self.dummy:
+            if ball[self.conf.BALL_STATUS_POSITION] == dummy_status:
                 dummies.append(ball)
             else:
                 result.append(ball)
@@ -158,7 +165,10 @@ class HashTable:
         while current_read_pos < self.conf.DATA_SIZE:
             balls = self.data_ram.readChunks(
                 [(current_read_pos, current_read_pos + self.conf.LOCAL_MEMORY_SIZE)])
-            balls = self.byte_operations.changeBallsStatus(balls, self.conf.DATA_STATUS)
+            
+            # this is to get rid of SECOND_DATA_STATUS from the intersperse stage
+            balls = self.byte_operations.removeSecondDataStatus(balls)
+            
             self._ballsIntoBins(balls)
             current_read_pos += self.conf.LOCAL_MEMORY_SIZE
 
@@ -174,7 +184,7 @@ class HashTable:
         write_chunks = []
         write_balls = []
         for bin_num, capacity_ball in bins_capacity:
-            capacity = int.from_bytes(capacity_ball, 'big', signed=False)
+            capacity = self.byte_operations.getCapacity(capacity_ball)
             if capacity >= 2*self.conf.MU -1:
                 raise Exception("Error, bin is too full")
             bin_loc = bin_num*self.conf.BIN_SIZE_IN_BYTES
@@ -214,7 +224,7 @@ class HashTable:
             # write the stash
             print('stash:', len(cuckoo_hash.stash))
             dummies = [get_random_string(self.conf.BALL_SIZE, self.conf.BALL_STATUS_POSITION,self.conf.STASH_DUMMY_STATUS) for i in range(self.conf.STASH_SIZE - len(cuckoo_hash.stash))]
-            stashes += cuckoo_hash.stash + dummies
+            stashes += self.byte_operations.changeBallsStatus(cuckoo_hash.stash, self.conf.STASH_DATA_STATUS) + dummies
             if len(stashes) + self.conf.STASH_SIZE >= self.conf.BIN_SIZE:
                 stashes = stashes + [self.dummy]*(self.conf.BIN_SIZE - len(stashes))
                 self.overflow_ram.writeChunks([(self.conf.OVERFLOW_SIZE + overflow_written*self.conf.BIN_SIZE_IN_BYTES, self.conf.OVERFLOW_SIZE + (overflow_written +1)*self.conf.BIN_SIZE_IN_BYTES )],stashes)
@@ -315,7 +325,7 @@ class HashTable:
             self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), ball)
         
         # if the ball was found with a standard data status, then continue with dummy lookups
-        if result_ball[self.conf.BALL_STATUS_POSITION] == self.conf.DATA_STATUS:
+        if result_ball[self.conf.BALL_STATUS_POSITION] == self.conf.DATA_STATUS or result_ball[self.conf.BALL_STATUS_POSITION] == self.conf.DUMMY_DATA_STATUS:
             key = get_random_string(self.conf.BALL_SIZE - self.conf.BALL_STATUS_POSITION -1)
         
         # look in bins
@@ -345,7 +355,7 @@ class HashTable:
         while current_read_pos < self.conf.DATA_SIZE:
             balls = second_data_ram.readChunks(
                 [(current_read_pos, current_read_pos + self.conf.LOCAL_MEMORY_SIZE)])
-            balls = self.byte_operations.changeBallsStatus(balls, self.conf.SECOND_DATA_STATUS)
+            # balls = self.byte_operations.changeBallsStatus(balls, self.conf.SECOND_DATA_STATUS)
             second_data_ram.writeChunks(
                 [(self.conf.DATA_SIZE + current_read_pos, self.conf.DATA_SIZE + current_read_pos + self.conf.LOCAL_MEMORY_SIZE)], balls)
             current_read_pos += self.conf.LOCAL_MEMORY_SIZE

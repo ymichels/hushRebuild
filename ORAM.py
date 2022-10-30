@@ -89,13 +89,18 @@ class ORAM:
                 current_table.data_ram = previous_table.bins_ram
                 current_table.rebuild()
                 return
+        final_table = self.tables[-1]
+        final_table.binsTightCompaction(self.conf.DUMMY_DATA_STATUS)
+        final_table.data_ram, final_table.bins_ram = final_table.bins_ram, final_table.data_ram
+        final_table.rebuild()
+        
+        
                 
     
     def intersperseStashAndLevelOne(self):
         hash_table_one = self.tables[0]
         stash_balls = list(self.local_stash.values())
-        stash_balls = hash_table_one.byte_operations.changeBallsStatus(stash_balls, self.conf.SECOND_DATA_STATUS)
-        stash_balls.extend((hash_table_one.conf.MU - len(stash_balls))*[self.dummy])
+        # stash_balls = hash_table_one.byte_operations.changeBallsStatus(stash_balls, self.conf.SECOND_DATA_STATUS)
         hash_table_one.bins_ram.writeChunks([hash_table_one.conf.MU, 2*hash_table_one.conf.MU], stash_balls)
         hash_table_one.intersperse()
         hash_table_one.is_built = False
