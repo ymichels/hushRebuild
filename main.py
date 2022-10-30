@@ -1,5 +1,6 @@
 
 import math
+import random
 from ORAM import ORAM
 from RAM.ram import RAM
 from config import config
@@ -11,8 +12,45 @@ from utils.cuckoo_hash import CuckooHash
 ### ATTENTION - if there are preformance issues, you can replace the *[self.dummy] arrays with something more efficient
 
 
-whole_ball = b')Tpb\x01HU_&uv\ts?rb'
-key = b'HU_&uv\ts?rb'
+
+a = ORAM(2**5*config.MU)
+
+# a.tables[-1].cleanWriteMemory()
+# a.tables[-1].createReadMemory()
+
+a.initial_build('testing_data.txt')
+
+data_ram = RAM('testing_data.txt', a.conf)
+for i in range(2**5*config.MU + 5):
+    ball_to_read = data_ram.readBall(random.randint(0,2**5*config.MU)*a.conf.BALL_SIZE)
+    key = ball_to_read[1 + a.conf.BALL_STATUS_POSITION:]
+    a.access('read',key)
+    if i % 10_000 == 0:
+        print('accesses: ',i)
+    
+print('RAM.RT_WRITE: ', RAM.RT_WRITE)
+print('RAM.RT_READ: ', RAM.RT_READ)
+print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
+print('RAM.BALL_READ: ', RAM.BALL_READ)
+print('done!')
+# a.initial_build(a.tables[-1].data_ram.file_path)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# whole_ball = b')Tpb\x01HU_&uv\ts?rb'
+# key = b'HU_&uv\ts?rb'
 
 # memory_used = 1_000_000_000_000_000
 # memory_stored = ((memory_used/2)/3.5)
@@ -28,12 +66,12 @@ key = b'HU_&uv\ts?rb'
 # print('local_memory_size: ', local_memory_size)
 # print(math.ceil(math.log(8,2)))
 # ORAM(2**10*config.MU + 100)
-a = HashTable(conf=config())
-a.cleanWriteMemory()
+# a = HashTable(conf=config())
+# a.cleanWriteMemory()
 # a.createReadMemory()
 # a.overflow_ram = a.second_overflow_ram
-a.rebuild()
-print(a.lookup(key))
+# a.rebuild()
+# print(a.lookup(key))
 # print('a.conf.NUMBER_OF_BINS_IN_OVERFLOW: ',a.conf.NUMBER_OF_BINS_IN_OVERFLOW)
 # a.rebuild()
 # print('a.conf.NUMBER_OF_BINS_IN_OVERFLOW: ',a.conf.NUMBER_OF_BINS_IN_OVERFLOW)

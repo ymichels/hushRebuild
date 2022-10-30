@@ -100,7 +100,7 @@ class HashTable:
         dummies = []
         result = []
         for ball in balls:
-            if ball[self.conf.BALL_STATUS_POSITION] == dummy_status:
+            if ball[self.conf.BALL_STATUS_POSITION:self.conf.BALL_STATUS_POSITION + 1 ] == dummy_status:
                 dummies.append(ball)
             else:
                 result.append(ball)
@@ -326,7 +326,7 @@ class HashTable:
             self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), ball)
         
         # if the ball was found with a standard data status, then continue with dummy lookups
-        if result_ball[self.conf.BALL_STATUS_POSITION] == self.conf.DATA_STATUS or result_ball[self.conf.BALL_STATUS_POSITION] == self.conf.DUMMY_DATA_STATUS:
+        if result_ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] == self.conf.DATA_STATUS or result_ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] == self.conf.DUMMY_DATA_STATUS:
             key = get_random_string(self.conf.BALL_SIZE - self.conf.BALL_STATUS_POSITION -1)
         
         # look in bins

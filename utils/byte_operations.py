@@ -15,7 +15,8 @@ class ByteOperations:
 
 
     def getCapacity(self, capacity_ball):
-        if capacity_ball[self.conf.BALL_STATUS_POSITION] != self.conf.DUMMY_STATUS:
+        if capacity_ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] != self.conf.DUMMY_STATUS:
+            raise 'entered here'
             return 0
         else:
             int.from_bytes(capacity_ball, 'big', signed=False)
@@ -49,9 +50,9 @@ class ByteOperations:
     def removeSecondDataStatus(self, balls):
         result = []
         for ball in balls:
-            if ball[self.conf.BALL_STATUS_POSITION] == self.conf.SECOND_DATA_STATUS:
+            if ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] == self.conf.SECOND_DATA_STATUS:
                 result.append(self.changeBallStatus(ball, self.conf.DATA_STATUS))
-            elif ball[self.conf.BALL_STATUS_POSITION] == self.conf.DUMMY_SECOND_DATA_STATUS:
+            elif ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] == self.conf.DUMMY_SECOND_DATA_STATUS:
                 result.append(self.changeBallStatus(ball, self.conf.DUMMY_DATA_STATUS))
             else:
                 result.append(ball)

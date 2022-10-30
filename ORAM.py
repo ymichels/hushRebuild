@@ -39,7 +39,7 @@ class ORAM:
         final_table.rebuild()
         final_table.data_ram = temp
         
-    def access(self, op,  key, value) -> bytes:
+    def access(self, op,  key, value = None) -> bytes:
         # search local stash
         is_found = False
         ball = self.local_stash.get(key)
