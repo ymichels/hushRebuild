@@ -20,7 +20,7 @@ class RAM:
 
     def readBall(self, location):
         RAM.BALL_READ += 1
-        if RAM.BALL_READ % 100_000 == 0:
+        if RAM.BALL_READ % 1_000_000 == 0:
             print('RAM.BALL_READ: ', RAM.BALL_READ)
             
         self.file.seek(location)
@@ -28,14 +28,14 @@ class RAM:
 
     def writeBall(self, location, ball):
         RAM.BALL_WRITE += 1
-        if RAM.BALL_WRITE % 100_000 == 0:
+        if RAM.BALL_WRITE % 1_000_000 == 0:
             print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
         self.file.seek(location)
         self.file.write(ball)
 
     def readChunks(self, chunks):
         RAM.RT_READ += 1
-        if RAM.RT_READ % 100_000 == 0:
+        if RAM.RT_READ % 1_000_000 == 0:
             print('RAM.RT_READ: ', RAM.RT_READ)
         balls = []
         for chunk in chunks:
@@ -47,7 +47,7 @@ class RAM:
 
     def writeChunks(self, chunks, balls):
         RAM.RT_WRITE += 1
-        if RAM.RT_WRITE % 100_000 == 0:
+        if RAM.RT_WRITE % 1_000_000 == 0:
             print('RAM.RT_WRITE: ', RAM.RT_WRITE)
         i = 0
         for chunk in chunks:
@@ -60,7 +60,7 @@ class RAM:
 
     def readBalls(self, locations):
         RAM.RT_READ += 1
-        if RAM.RT_READ % 100_000 == 0:
+        if RAM.RT_READ % 1_000_000 == 0:
             print('RAM.RT_READ: ', RAM.RT_READ)
         return [self.readBall(location) for location in locations]
     
