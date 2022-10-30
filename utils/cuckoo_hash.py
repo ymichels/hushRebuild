@@ -19,6 +19,12 @@ class CuckooHash:
             if ball == self.dummy:
                 continue
             self.insert_ball(ball)
+        # inserting the stash to the tables is done only so that in the tight-compaction the stash wouldn't be lost
+        for ball in self.stash:
+            for i in range(len(self.table1)):
+                if self.table1[i] == self.dummy:
+                    self.table1[i] = ball
+                    break
     
     def insert_ball(self,ball):
         seen_locations = []
