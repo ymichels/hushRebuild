@@ -225,7 +225,7 @@ class HashTable:
             # write the stash
             # print('stash:', len(cuckoo_hash.stash))
             dummies = [get_random_string(self.conf.BALL_SIZE, self.conf.BALL_STATUS_POSITION,self.conf.STASH_DUMMY_STATUS) for i in range(self.conf.STASH_SIZE - len(cuckoo_hash.stash))]
-            stashes += self.byte_operations.changeBallsStatus(cuckoo_hash.stash, self.conf.STASH_DATA_STATUS) + dummies
+            stashes += cuckoo_hash.stash + dummies
             if len(stashes) + self.conf.STASH_SIZE >= self.conf.BIN_SIZE:
                 stashes = stashes + [self.dummy]*(self.conf.BIN_SIZE - len(stashes))
                 self.overflow_ram.writeChunks([(self.conf.OVERFLOW_SIZE + overflow_written*self.conf.BIN_SIZE_IN_BYTES, self.conf.OVERFLOW_SIZE + (overflow_written +1)*self.conf.BIN_SIZE_IN_BYTES )],stashes)
@@ -308,12 +308,13 @@ class HashTable:
         
         # look in overflow
         bin_num = self.byte_operations.keyToPseudoRandomNumber(key, self.conf.NUMBER_OF_BINS_IN_OVERFLOW)
+        replacement_ball = get_random_string(self.conf.BALL_SIZE,self.conf.BALL_STATUS_POSITION, self.conf.DUMMY_DATA_STATUS)
         
         # table 1
         ball = self.overflow_ram.readBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location) 
         if ball[self.conf.BALL_STATUS_POSITION+1:] == key:
             result_ball = ball
-            self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, self.dummy)
+            self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, replacement_ball)
         else:
             self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, ball)
         
@@ -321,7 +322,7 @@ class HashTable:
         ball = self.overflow_ram.readBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location)) 
         if ball[self.conf.BALL_STATUS_POSITION+1:] == key:
             result_ball = ball
-            self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), self.dummy)
+            self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), replacement_ball)
         else:
             self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), ball)
         
@@ -336,7 +337,7 @@ class HashTable:
         ball = self.bins_ram.readBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location) 
         if ball[self.conf.BALL_STATUS_POSITION+1:] == key:
             result_ball = ball
-            self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, self.dummy) 
+            self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, replacement_ball) 
         else:
             self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, ball) 
         
@@ -344,7 +345,7 @@ class HashTable:
         ball = self.bins_ram.readBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location)) 
         if ball[self.conf.BALL_STATUS_POSITION+1:] == key:
             result_ball = ball
-            self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), self.dummy)
+            self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), replacement_ball)
         else:
             self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), ball)
         
@@ -357,7 +358,7 @@ class HashTable:
             balls = second_data_ram.readChunks(
                 [(current_read_pos, current_read_pos + self.conf.LOCAL_MEMORY_SIZE)])
             # balls = self.byte_operations.changeBallsStatus(balls, self.conf.SECOND_DATA_STATUS)
-            second_data_ram.writeChunks(
+            self.bins_ram.writeChunks(
                 [(self.conf.DATA_SIZE + current_read_pos, self.conf.DATA_SIZE + current_read_pos + self.conf.LOCAL_MEMORY_SIZE)], balls)
             current_read_pos += self.conf.LOCAL_MEMORY_SIZE
     

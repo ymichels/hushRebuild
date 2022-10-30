@@ -15,11 +15,9 @@ from utils.cuckoo_hash import CuckooHash
 
 a = ORAM(2**5*config.MU)
 
-# a.tables[-1].cleanWriteMemory()
-# a.tables[-1].createReadMemory()
-
-# a.initial_build('testing_data.txt')
-
+a.cleanWriteMemory()
+# a.tables[-1].is_built = True
+a.initial_build('testing_data.txt')
 data_ram = RAM('testing_data.txt', a.conf)
 for i in range(2**5*config.MU + 5):
     ball_to_read = data_ram.readBall(random.randint(0,2**5*config.MU)*a.conf.BALL_SIZE)
@@ -27,6 +25,7 @@ for i in range(2**5*config.MU + 5):
     a.access('read',key)
     if i % 10_000 == 0:
         print('accesses: ',i)
+        print('not found ratio: ', a.not_found/(i+1))
     
 print('RAM.RT_WRITE: ', RAM.RT_WRITE)
 print('RAM.RT_READ: ', RAM.RT_READ)

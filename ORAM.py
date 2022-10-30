@@ -12,7 +12,7 @@ from utils.helper_functions import get_random_string
 class ORAM:
 
     def __init__(self, number_of_blocks) -> None:
-        
+        self.not_found = 0
         # power of two number of bins:
         number_of_blocks = (2**math.ceil(math.log(number_of_blocks/config.MU,2)))*config.MU
         self.conf = config(number_of_blocks)
@@ -42,6 +42,7 @@ class ORAM:
     def access(self, op,  key, value = None) -> bytes:
         # search local stash
         is_found = False
+        original_key = key
         ball = self.local_stash.get(key)
         if ball != None:
             is_found = True
@@ -50,27 +51,32 @@ class ORAM:
         # search tables
         for table in self.tables:
             if table.is_built and not is_found:
-                ball = table.lookup(key)
-                if ball[self.conf.BALL_STATUS_POSITION+1:] == key:
+                lookup_ball = table.lookup(key)
+                if lookup_ball[self.conf.BALL_STATUS_POSITION+1:] == key:
+                    ball = lookup_ball
                     is_found = True
                     key = get_random_string(self.conf.BALL_SIZE - self.conf.BALL_STATUS_POSITION -1)
             elif table.is_built and is_found:
                 table.lookup(key)
         
         # something must always be added to the stash
-        if not is_found or key in self.local_stash.keys():
+        if not is_found or original_key in self.local_stash.keys():
             dummy_data_ball = get_random_string(self.conf.BALL_SIZE,self.conf.BALL_STATUS_POSITION, self.conf.DUMMY_DATA_STATUS)
             self.local_stash[dummy_data_ball[self.conf.BALL_STATUS_POSITION+1:]] = dummy_data_ball
 
         if not is_found:
-            print(f'key {key} not found')    
+            self.not_found += 1
+            # print(f'key {key} not found')    
         elif op == 'read':
             self.local_stash[ball[self.conf.BALL_STATUS_POSITION+1:]] = ball
         elif op == 'write':
             self.local_stash[ball[self.conf.BALL_STATUS_POSITION+1:]] = value + self.conf.DATA_STATUS + ball[self.conf.BALL_STATUS_POSITION+1:]
         self.read_count += 1
+        if len(self.local_stash) != self.read_count:
+            print(8)
         if self.read_count == self.conf.MU:
             self.rebuild()
+            self.local_stash = {}
     
     def rebuild(self):
         self.read_count = 0
@@ -107,7 +113,7 @@ class ORAM:
         hash_table_one = self.tables[0]
         stash_balls = list(self.local_stash.values())
         # stash_balls = hash_table_one.byte_operations.changeBallsStatus(stash_balls, self.conf.SECOND_DATA_STATUS)
-        hash_table_one.bins_ram.writeChunks([hash_table_one.conf.MU, 2*hash_table_one.conf.MU], stash_balls)
+        hash_table_one.bins_ram.writeChunks([[hash_table_one.conf.MU*hash_table_one.conf.BALL_SIZE, 2*hash_table_one.conf.MU*hash_table_one.conf.BALL_SIZE]], stash_balls)
         hash_table_one.intersperse()
         hash_table_one.is_built = False
     
