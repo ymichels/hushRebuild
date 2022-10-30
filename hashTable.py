@@ -66,10 +66,11 @@ class HashTable:
         self.obliviousBallsIntoBins()
         self.cuckooHashOverflow()
         self.is_built = True
-        print('RAM.RT_WRITE: ', RAM.RT_WRITE)
-        print('RAM.RT_READ: ', RAM.RT_READ)
-        print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
-        print('RAM.BALL_READ: ', RAM.BALL_READ)
+        print('rebuilt layer: ', self.bins_ram.file_path)
+        # print('RAM.RT_WRITE: ', RAM.RT_WRITE)
+        # print('RAM.RT_READ: ', RAM.RT_READ)
+        # print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
+        # print('RAM.BALL_READ: ', RAM.BALL_READ)
         
     def binsTightCompaction(self, dummy_status = None):
         # stash needs taken care of
@@ -222,7 +223,7 @@ class HashTable:
             self.bins_ram.writeChunks([(current_bin_index*self.conf.BIN_SIZE_IN_BYTES, (current_bin_index +1)*self.conf.BIN_SIZE_IN_BYTES )],hash_tables)
             
             # write the stash
-            print('stash:', len(cuckoo_hash.stash))
+            # print('stash:', len(cuckoo_hash.stash))
             dummies = [get_random_string(self.conf.BALL_SIZE, self.conf.BALL_STATUS_POSITION,self.conf.STASH_DUMMY_STATUS) for i in range(self.conf.STASH_SIZE - len(cuckoo_hash.stash))]
             stashes += self.byte_operations.changeBallsStatus(cuckoo_hash.stash, self.conf.STASH_DATA_STATUS) + dummies
             if len(stashes) + self.conf.STASH_SIZE >= self.conf.BIN_SIZE:
@@ -261,7 +262,7 @@ class HashTable:
             next_ram, current_ram = current_ram, next_ram
         self.overflow_ram = current_ram
         self.second_overflow_ram = next_ram
-        print('this is where the real overflow is stored:',self.overflow_ram.file_path)
+        # print('this is where the real overflow is stored:',self.overflow_ram.file_path)
     
     def _obliviousBallsIntoBinsFirstIteration(self,oblivious_sort):
         current_read_pos = 0
@@ -287,7 +288,7 @@ class HashTable:
             self.overflow_ram.writeChunks([(current_bin_index*self.conf.BIN_SIZE_IN_BYTES, (current_bin_index +1)*self.conf.BIN_SIZE_IN_BYTES )],hash_tables)
             
             # write the stash
-            print('stash:', len(cuckoo_hash.stash))
+            # print('stash:', len(cuckoo_hash.stash))
             self.addToLocalStash(cuckoo_hash.stash)
             current_bin_index += 1
     

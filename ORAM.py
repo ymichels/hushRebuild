@@ -57,8 +57,13 @@ class ORAM:
             elif table.is_built and is_found:
                 table.lookup(key)
         
+        # something must always be added to the stash
+        if not is_found or key in self.local_stash.keys():
+            dummy_data_ball = get_random_string(self.conf.BALL_SIZE,self.conf.BALL_STATUS_POSITION, self.conf.DUMMY_DATA_STATUS)
+            self.local_stash[dummy_data_ball[self.conf.BALL_STATUS_POSITION+1:]] = dummy_data_ball
+
         if not is_found:
-            print('key {} not found'.format(key))
+            print(f'key {key} not found')    
         elif op == 'read':
             self.local_stash[ball[self.conf.BALL_STATUS_POSITION+1:]] = ball
         elif op == 'write':
