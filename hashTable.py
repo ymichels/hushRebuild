@@ -4,7 +4,7 @@ from collections import defaultdict
 from utils.byte_operations import ByteOperations
 from thresholdGenerator import ThresholdGenerator
 from utils.cuckoo_hash import CuckooHash
-from utils.helper_functions import get_random_string
+from utils.helper_functions import get_random_string, uniqueAccross
 from utils.oblivious_sort import ObliviousSort
 from config import config
 
@@ -56,10 +56,19 @@ class HashTable:
             self.second_overflow_ram.writeChunks(
                 [(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)], empty_bin)
             current_write += self.conf.BIN_SIZE_IN_BYTES
+    
+    def emptyData(self):
+        current_write = 0
+        dummy_bin = [self.dummy]*self.conf.BIN_SIZE
+        while current_write < 2*self.conf.DATA_SIZE:
+            self.data_ram.writeChunks(
+                [(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)], dummy_bin)
+            current_write += self.conf.BIN_SIZE_IN_BYTES
         
 
-    def rebuild(self):
-        self.ballsIntoBins()
+    def rebuild(self, final = False):
+        self.conf.reset()
+        self.ballsIntoBins(final)
         self.moveSecretLoad()
         self.tightCompaction(self.conf.NUMBER_OF_BINS_IN_OVERFLOW, self.overflow_ram)
         self.cuckooHashBins()
@@ -72,35 +81,35 @@ class HashTable:
         # print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
         # print('RAM.BALL_READ: ', RAM.BALL_READ)
         
-    def binsTightCompaction(self, dummy_status = None):
+    def binsTightCompaction(self, dummy_statuses = None):
         # stash needs taken care of
-        self.tightCompaction(self.conf.NUMBER_OF_BINS, self.bins_ram, dummy_status)
+        self.tightCompaction(self.conf.NUMBER_OF_BINS, self.bins_ram, dummy_statuses)
         
-    def tightCompaction(self, NUMBER_OF_BINS, ram, dummy_status = None):
-        if dummy_status == None:
-            dummy_status = self.conf.DUMMY_STATUS
+    def tightCompaction(self, NUMBER_OF_BINS, ram, dummy_statuses = None):
+        if dummy_statuses == None:
+            dummy_statuses = [self.conf.DUMMY_STATUS]
         offset = NUMBER_OF_BINS
         distance_from_center = 1
         midLocation = int(self.conf.EPSILON*self.conf.N)*self.conf.BALL_SIZE
         
         while offset >= 1:
             start_loc = int(midLocation - midLocation*distance_from_center)
-            self._tightCompaction(start_loc, ram, int(offset), dummy_status)
+            self._tightCompaction(start_loc, ram, int(offset), dummy_statuses)
             
             offset /= 2
             distance_from_center /=2
     
-    def _tightCompaction(self, start_loc, ram, offset, dummy_status):
+    def _tightCompaction(self, start_loc, ram, offset, dummy_statuses):
         for i in range(offset):
             balls = self.byte_operations.readTransposed(ram, offset, start_loc + i*self.conf.BALL_SIZE, 2*self.conf.MU)
-            balls = self.localTightCompaction(balls, dummy_status)
+            balls = self.localTightCompaction(balls, dummy_statuses)
             self.byte_operations.writeTransposed(ram, balls, offset, start_loc + i*self.conf.BALL_SIZE)
         
-    def localTightCompaction(self, balls, dummy_status):
+    def localTightCompaction(self, balls, dummy_statuses):
         dummies = []
         result = []
         for ball in balls:
-            if ball[self.conf.BALL_STATUS_POSITION:self.conf.BALL_STATUS_POSITION + 1 ] == dummy_status:
+            if ball[self.conf.BALL_STATUS_POSITION:self.conf.BALL_STATUS_POSITION + 1 ] in dummy_statuses:
                 dummies.append(ball)
             else:
                 result.append(ball)
@@ -131,14 +140,17 @@ class HashTable:
             #bin_tops is a list of lists of balls, each list of balls is the top 2*MU*EPSILON from it's bin
             bin_tops = [balls[x:x+int(2*self.conf.MU*self.conf.EPSILON)] for x in range(0, len(balls), int(2*self.conf.MU*self.conf.EPSILON))]
             
-            #Step 3: select the secret load and write it to the overflow pile
-            self._moveSecretLoad(bins_capacity, bin_tops, iteration_num)
+            #Step 3: select the secret load and write it to the overflow pile (also update the capacities)
+            capacity_threshold_balls = self._moveSecretLoad(bins_capacity, bin_tops, iteration_num)
             iteration_num += 1
             current_bin += int(1/self.conf.EPSILON)
+            
+            self.bins_ram.writeChunks(capacity_chunks[:len(capacity_threshold_balls)], capacity_threshold_balls)
 
     def _moveSecretLoad(self, bins_capacity, bin_tops, iteration_num):
         write_balls = []
         i = 0
+        capacity_threshold_balls = []
         for capacity,bin_top in zip(bins_capacity,bin_tops):
             
             #this is to skip the non-existant bins.
@@ -156,17 +168,25 @@ class HashTable:
             #Add only the balls above the threshold
             write_balls.extend(bin_top[- (capacity - threshold):])
             i +=1
+            
+            capacity_threshold_balls.append(self.byte_operations.constructCapacityThresholdBall(capacity, threshold))
         
         #Add the appropriate amount of dummies
         write_balls.extend([self.dummy]*(2*self.conf.MU - len(write_balls)))
         #Write to the overflow transposed (for the tight compaction later)
         self.byte_operations.writeTransposed(self.overflow_ram, write_balls, self.conf.NUMBER_OF_BINS_IN_OVERFLOW, iteration_num*self.conf.BALL_SIZE)
+        
+        return capacity_threshold_balls
 
-    def ballsIntoBins(self):
+    def ballsIntoBins(self, final):
         current_read_pos = 0
-        while current_read_pos < self.conf.DATA_SIZE:
+        end = self.conf.DATA_SIZE*2 if final else self.conf.DATA_SIZE
+        while current_read_pos < end:
             balls = self.data_ram.readChunks(
                 [(current_read_pos, current_read_pos + self.conf.LOCAL_MEMORY_SIZE)])
+            
+            if final:
+                balls = list(filter(lambda ball: ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] == self.conf.DATA_STATUS,balls))
             
             # this is to get rid of SECOND_DATA_STATUS from the intersperse stage
             balls = self.byte_operations.removeSecondDataStatus(balls)
@@ -212,14 +232,12 @@ class HashTable:
         while current_bin_index < self.conf.NUMBER_OF_BINS:
             # get the bin
             bin_data = self.bins_ram.readChunks([(current_bin_index*self.conf.BIN_SIZE_IN_BYTES, (current_bin_index +1)*self.conf.BIN_SIZE_IN_BYTES )])
-            capacity = int.from_bytes(bin_data[0], 'big', signed=False)
-            bin_data = bin_data[1:capacity+1]
-            overflow_data = []
+            capacity, threshold = self.byte_operations.deconstructCapacityThresholdBall(bin_data[0])
+            overflow_data = bin_data[threshold+1:capacity+1]
+            bin_data = bin_data[1:threshold+1]
+            bin_data, overflow_data = uniqueAccross(bin_data, overflow_data)
 
             # seperate data that is in the bin, and data that is in the overflow
-            if capacity > self.conf.MU:
-                overflow_data = bin_data[self.conf.MU:]
-                bin_data = bin_data[:self.conf.MU]
                 
             # generate the cuckoo hash
             cuckoo_hash = CuckooHash(self.conf)

@@ -6,7 +6,7 @@ class ObliviousSort:
     def __init__(self, conf:config) -> None:
         self.conf = conf
         self.byte_operations = ByteOperations(self.conf.MAIN_KEY, conf)
-        self.dummy = b'\x00'*self.conf.BALL_SIZE
+        self.dummy = self.conf.DUMMY_STATUS*self.conf.BALL_SIZE
 
     def splitToBinsByBit(self, balls, bit_num, number_of_bins):
         bin_zero = []

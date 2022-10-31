@@ -20,6 +20,18 @@ class ByteOperations:
         else:
             return int.from_bytes(capacity_ball, 'big', signed=False)
         
+    
+    def constructCapacityThresholdBall(self, capacity, threshold):
+        capacity_bytes = capacity.to_bytes(int((self.conf.BALL_SIZE - self.conf.BALL_STATUS_POSITION)/2), 'big')
+        threshold_bytes = threshold.to_bytes(int((self.conf.BALL_SIZE - self.conf.BALL_STATUS_POSITION)/2), 'big')
+        length = len(capacity_bytes) + len(threshold_bytes)
+        return self.conf.DUMMY_STATUS*(self.conf.BALL_SIZE - length) + capacity_bytes + threshold_bytes
+    
+    def deconstructCapacityThresholdBall(self, ball):
+        length = int((self.conf.BALL_SIZE - self.conf.BALL_STATUS_POSITION)/2)
+        threshold = int.from_bytes(ball[self.conf.BALL_STATUS_POSITION + length:], 'big', signed=False)
+        capacity = int.from_bytes(ball[:self.conf.BALL_SIZE - length], 'big', signed=False)
+        return capacity, threshold
         
     def ballToPseudoRandomNumber(self, ball,limit = -1):
         ball_key = ball[self.conf.BALL_STATUS_POSITION + 1:]
@@ -68,7 +80,6 @@ class ByteOperations:
         for ball in balls:
             dic[ball[1 + self.conf.BALL_STATUS_POSITION:]] = ball
         return dic
-            
             
             
             

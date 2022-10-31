@@ -3,24 +3,12 @@ from RAM.ram import RAM
 from config import config
 from utils.byte_operations import ByteOperations
 
-def unique(list1):
-  
-    # initialize a null list
-    unique_list = []
-  
-    # traverse for all elements
-    for x in list1:
-        # check if exists in unique_list or not
-        if x not in unique_list:
-            unique_list.append(x)
-    # print list
-    return unique_list
 class CuckooHash:
     def __init__(self, conf:config) -> None:
         self.conf = conf
         self.table1_byte_operations = ByteOperations(self.conf.CUCKOO_HASH_KEY_1, conf)
         self.table2_byte_operations = ByteOperations(self.conf.CUCKOO_HASH_KEY_2, conf)
-        self.dummy = b'\x00'*self.conf.BALL_SIZE
+        self.dummy = self.conf.DUMMY_STATUS*self.conf.BALL_SIZE
         self.table1 = [self.dummy]*self.conf.MU
         self.table2 = [self.dummy]*self.conf.MU
         self.stash = []
@@ -47,7 +35,7 @@ class CuckooHash:
             location = self.table1_byte_operations.ballToPseudoRandomNumber(ball,self.conf.MU)
             evicted_ball = self.table1[location]
             self.table1[location] = ball
-            if evicted_ball == self.dummy:
+            if evicted_ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION+1] == self.conf.DUMMY_STATUS:
                 break
             ball = evicted_ball
             location = self.table2_byte_operations.ballToPseudoRandomNumber(ball,self.conf.MU)
@@ -61,7 +49,6 @@ class CuckooHash:
                     stash_ball = self.table1_byte_operations.changeBallStatus(ball, self.conf.STASH_DATA_STATUS)                
                     self.stash.append(stash_ball)
                     if len(self.stash) > self.conf.STASH_SIZE:
-                        #THERE'S A PROBLEM HERE seen_locations IS FILLED WITH THE SAME NUMBER ALWAYS EVEN THOUGH IT SHOULDN'T
                         raise Exception("Error, Cuckoo hash stash is full")
                 break
             seen_locations.append(location)

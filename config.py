@@ -48,19 +48,26 @@ class config:
         if N == None:
             return
         self.N = N
-        self.NUMBER_OF_BINS = math.ceil(N/self.MU)
-        self.DATA_SIZE = N*self.BALL_SIZE
-        self.OVERFLOW_SIZE = math.ceil(self.DATA_SIZE*self.EPSILON)
-        self.NUMBER_OF_BINS_IN_OVERFLOW = math.ceil(self.EPSILON*N/self.MU)
+        self.reset()
+        
+        self.MAIN_KEY = get_random_string(16)
+        self.CUCKOO_HASH_KEY_1 = get_random_string(16)
+        self.CUCKOO_HASH_KEY_2 = get_random_string(16)
+        
         self.DATA_LOCATION = '{}/data.txt'.format(self.NUMBER_OF_BINS)
         self.BINS_LOCATION = '{}/bins.txt'.format(self.NUMBER_OF_BINS)
         self.OVERFLOW_LOCATION = '{}/overflow.txt'.format(self.NUMBER_OF_BINS)
         # This is for the oblivious balls into bins so that the bins would not be overriden.
         self.OVERFLOW_SECOND_LOCATION = '{}/second_overflow.txt'.format(self.NUMBER_OF_BINS)
         
-        self.MAIN_KEY = get_random_string(16)
-        self.CUCKOO_HASH_KEY_1 = get_random_string(16)
-        self.CUCKOO_HASH_KEY_2 = get_random_string(16)
+        
+        
+    def reset(self):
+        self.NUMBER_OF_BINS = math.ceil(self.N/self.MU)
+        self.DATA_SIZE = self.N*self.BALL_SIZE
+        self.OVERFLOW_SIZE = math.ceil(self.DATA_SIZE*self.EPSILON)
+        self.NUMBER_OF_BINS_IN_OVERFLOW = math.ceil(self.EPSILON*self.N/self.MU)
+        
         
         
 # logn = 20

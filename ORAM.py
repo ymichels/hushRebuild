@@ -16,7 +16,7 @@ class ORAM:
         # power of two number of bins:
         number_of_blocks = (2**math.ceil(math.log(number_of_blocks/config.MU,2)))*config.MU
         self.conf = config(number_of_blocks)
-        self.dummy = b'\x00'*self.conf.BALL_SIZE
+        self.dummy = self.conf.DUMMY_STATUS*self.conf.BALL_SIZE
         
         self.local_stash = {}
         
@@ -34,6 +34,7 @@ class ORAM:
     
     def initial_build(self, data_location) -> None:
         final_table = self.tables[-1]
+        final_table.emptyData()
         temp = final_table.data_ram
         final_table.data_ram = RAM(data_location, final_table.conf)
         final_table.rebuild()
@@ -102,9 +103,11 @@ class ORAM:
                 current_table.rebuild()
                 return
         final_table = self.tables[-1]
-        final_table.binsTightCompaction(self.conf.DUMMY_DATA_STATUS)
+        final_table.copyToEndOfBins(self.tables[-2].bins_ram)
+        final_table.intersperse()
+        final_table.binsTightCompaction([self.conf.DUMMY_DATA_STATUS, self.conf.DUMMY_STATUS])
         final_table.data_ram, final_table.bins_ram = final_table.bins_ram, final_table.data_ram
-        final_table.rebuild()
+        final_table.rebuild(True)
         
         
                 
