@@ -15,14 +15,14 @@ from utils.cuckoo_hash import CuckooHash
 # print(a.constructCapacityThresholdBall(21000,20000))
 # print(a.deconstructCapacityThresholdBall(a.constructCapacityThresholdBall(21000,20000)))
 
-a = ORAM(2**2*config.MU)
+a = ORAM(2**5*config.MU)
 
 a.cleanWriteMemory()
 # # a.tables[-1].is_built = True
 a.initial_build('testing_data.txt')
 data_ram = RAM('testing_data.txt', a.conf)
-for i in range(2**2*config.MU + 50_000):
-    ball_to_read = data_ram.readBall(random.randint(0,2**2*config.MU)*a.conf.BALL_SIZE)
+for i in range(2**5*config.MU + 50_000):
+    ball_to_read = data_ram.readBall(random.randint(0,2**5*config.MU)*a.conf.BALL_SIZE)
     key = ball_to_read[1 + a.conf.BALL_STATUS_POSITION:]
     a.access('read',key)
     if i % 10_000 == 0:
