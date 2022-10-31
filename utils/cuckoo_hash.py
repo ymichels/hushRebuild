@@ -3,7 +3,18 @@ from RAM.ram import RAM
 from config import config
 from utils.byte_operations import ByteOperations
 
-
+def unique(list1):
+  
+    # initialize a null list
+    unique_list = []
+  
+    # traverse for all elements
+    for x in list1:
+        # check if exists in unique_list or not
+        if x not in unique_list:
+            unique_list.append(x)
+    # print list
+    return unique_list
 class CuckooHash:
     def __init__(self, conf:config) -> None:
         self.conf = conf
@@ -14,17 +25,21 @@ class CuckooHash:
         self.table2 = [self.dummy]*self.conf.MU
         self.stash = []
 
+    def hashless_insert(self,balls):
+        for ball in balls:
+            for i in range(len(self.table1)):
+                if self.table1[i] == self.dummy:
+                    self.table1[i] = ball
+                    break
+
     def insert_bulk(self,balls):
         for ball in balls:
             if ball == self.dummy:
                 continue
             self.insert_ball(ball)
+        print('stash size: ', len(self.stash))
         # inserting the stash to the tables is done only so that in the tight-compaction the stash wouldn't be lost
-        for ball in self.stash:
-            for i in range(len(self.table1)):
-                if self.table1[i] == self.dummy:
-                    self.table1[i] = ball
-                    break
+        self.hashless_insert(self.stash)
     
     def insert_ball(self,ball):
         seen_locations = []

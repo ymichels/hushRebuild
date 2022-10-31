@@ -108,6 +108,7 @@ class HashTable:
         return result
     
     def moveSecretLoad(self):
+        # EDIT CAPACITY TO FIT THRESHOLD, insert capacity to cuckoo hash, then insert the rest hushlessly.
         self.threshold_generator.reset()
         current_bin = 0
         iteration_num = 0
@@ -213,10 +214,17 @@ class HashTable:
             bin_data = self.bins_ram.readChunks([(current_bin_index*self.conf.BIN_SIZE_IN_BYTES, (current_bin_index +1)*self.conf.BIN_SIZE_IN_BYTES )])
             capacity = int.from_bytes(bin_data[0], 'big', signed=False)
             bin_data = bin_data[1:capacity+1]
+            overflow_data = []
 
+            # seperate data that is in the bin, and data that is in the overflow
+            if capacity > self.conf.MU:
+                overflow_data = bin_data[self.conf.MU:]
+                bin_data = bin_data[:self.conf.MU]
+                
             # generate the cuckoo hash
             cuckoo_hash = CuckooHash(self.conf)
             cuckoo_hash.insert_bulk(bin_data)
+            cuckoo_hash.hashless_insert(overflow_data)
 
             # write the data
             hash_tables = cuckoo_hash.table1 + cuckoo_hash.table2

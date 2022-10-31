@@ -1,5 +1,7 @@
 import math
 
+from utils.helper_functions import get_random_string
+
 class config:
     N = 2**20
 
@@ -10,7 +12,7 @@ class config:
     BIN_SIZE = 2*MU
     BIN_SIZE_IN_BYTES = BIN_SIZE*BALL_SIZE
     EPSILON = 1/LOG_LAMBDA
-    STASH_SIZE = LOG_LAMBDA
+    STASH_SIZE = 2*LOG_LAMBDA
 
 
     DATA_SIZE = N*BALL_SIZE
@@ -55,6 +57,11 @@ class config:
         self.OVERFLOW_LOCATION = '{}/overflow.txt'.format(self.NUMBER_OF_BINS)
         # This is for the oblivious balls into bins so that the bins would not be overriden.
         self.OVERFLOW_SECOND_LOCATION = '{}/second_overflow.txt'.format(self.NUMBER_OF_BINS)
+        
+        self.MAIN_KEY = get_random_string(16)
+        self.CUCKOO_HASH_KEY_1 = get_random_string(16)
+        self.CUCKOO_HASH_KEY_2 = get_random_string(16)
+        
         
 # logn = 20
 # n = 2**logn
