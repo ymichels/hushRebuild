@@ -68,6 +68,7 @@ class HashTable:
 
     def rebuild(self, final = False):
         self.conf.reset()
+        self.local_stash = {}
         self.ballsIntoBins(final)
         self.moveSecretLoad()
         self.tightCompaction(self.conf.NUMBER_OF_BINS_IN_OVERFLOW, self.overflow_ram)
