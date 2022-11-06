@@ -22,6 +22,8 @@ class HashTable:
         self.dummy = b'\x00'*conf.BALL_SIZE
         self.local_stash = {}
 
+    def createDummies(self, count):
+        return [get_random_string(self.conf.BALL_SIZE, self.conf.BALL_STATUS_POSITION, self.conf.DUMMY_STATUS) for i in range(count)]
     # This function creates random data for testing.
     def createReadMemory(self):
         current_write = 0
@@ -30,10 +32,9 @@ class HashTable:
             self.data_ram.writeChunks(
                 [(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)], random_bin)
             current_write += self.conf.BIN_SIZE_IN_BYTES
-        dummy_bin = [self.dummy]*self.conf.BIN_SIZE
         while current_write < 2*self.conf.DATA_SIZE:
             self.data_ram.writeChunks(
-                [(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)], dummy_bin)
+                [(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)], self.createDummies(self.conf.BIN_SIZE))
             current_write += self.conf.BIN_SIZE_IN_BYTES
     
     # This function prepares the bins for writing.
@@ -41,10 +42,9 @@ class HashTable:
     def cleanWriteMemory(self):
         # #Cleaning the bins
         current_write = 0
-        empty_bin = [self.dummy]*self.conf.BIN_SIZE
         while current_write < self.conf.DATA_SIZE*2:
             self.bins_ram.writeChunks(
-                [(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)], empty_bin)
+                [(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)], self.createDummies(self.conf.BIN_SIZE))
             current_write += self.conf.BIN_SIZE_IN_BYTES
         
         #Cleaning the overflow pile
@@ -52,17 +52,16 @@ class HashTable:
         FINAL_OVERFLOW_SIZE = 2**math.ceil(math.log(self.conf.OVERFLOW_SIZE + self.conf.LOG_LAMBDA*self.conf.NUMBER_OF_BINS,2))
         while current_write < FINAL_OVERFLOW_SIZE*2:
             self.overflow_ram.writeChunks(
-                [(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)], empty_bin)
+                [(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)], self.createDummies(self.conf.BIN_SIZE))
             self.second_overflow_ram.writeChunks(
-                [(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)], empty_bin)
+                [(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)], self.createDummies(self.conf.BIN_SIZE))
             current_write += self.conf.BIN_SIZE_IN_BYTES
     
     def emptyData(self):
         current_write = 0
-        dummy_bin = [self.dummy]*self.conf.BIN_SIZE
         while current_write < 2*self.conf.DATA_SIZE:
             self.data_ram.writeChunks(
-                [(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)], dummy_bin)
+                [(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)], self.createDummies(self.conf.BIN_SIZE))
             current_write += self.conf.BIN_SIZE_IN_BYTES
         
 
@@ -173,7 +172,7 @@ class HashTable:
             capacity_threshold_balls.append(self.byte_operations.constructCapacityThresholdBall(capacity, threshold))
         
         #Add the appropriate amount of dummies
-        write_balls.extend([self.dummy]*(2*self.conf.MU - len(write_balls)))
+        write_balls.extend(self.createDummies(2*self.conf.MU - len(write_balls)))
         #Write to the overflow transposed (for the tight compaction later)
         self.byte_operations.writeTransposed(self.overflow_ram, write_balls, self.conf.NUMBER_OF_BINS_IN_OVERFLOW, iteration_num*self.conf.BALL_SIZE)
         
@@ -254,7 +253,7 @@ class HashTable:
             dummies = [get_random_string(self.conf.BALL_SIZE, self.conf.BALL_STATUS_POSITION,self.conf.STASH_DUMMY_STATUS) for i in range(self.conf.STASH_SIZE - len(cuckoo_hash.stash))]
             stashes += cuckoo_hash.stash + dummies
             if len(stashes) + self.conf.STASH_SIZE >= self.conf.BIN_SIZE:
-                stashes = stashes + [self.dummy]*(self.conf.BIN_SIZE - len(stashes))
+                stashes = stashes + self.createDummies(self.conf.BIN_SIZE - len(stashes))
                 self.overflow_ram.writeChunks([(self.conf.OVERFLOW_SIZE + overflow_written*self.conf.BIN_SIZE_IN_BYTES, self.conf.OVERFLOW_SIZE + (overflow_written +1)*self.conf.BIN_SIZE_IN_BYTES )],stashes)
                 stashes = []
                 overflow_written += 1
@@ -325,7 +324,7 @@ class HashTable:
        
     def lookup(self, key):
         # look in local stash
-        result_ball = self.dummy
+        result_ball = self.createDummies(1)[0]
         ball = self.local_stash.get(key)
         if ball != None:
             result_ball = ball
@@ -335,7 +334,7 @@ class HashTable:
         
         # look in overflow
         bin_num = self.byte_operations.keyToPseudoRandomNumber(key, self.conf.NUMBER_OF_BINS_IN_OVERFLOW)
-        replacement_ball = get_random_string(self.conf.BALL_SIZE,self.conf.BALL_STATUS_POSITION, self.conf.DUMMY_DATA_STATUS)
+        replacement_ball = self.createDummies(1)[0]
         
         # table 1
         ball = self.overflow_ram.readBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location) 
@@ -354,7 +353,7 @@ class HashTable:
             self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), ball)
         
         # if the ball was found with a standard data status, then continue with dummy lookups
-        if result_ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] == self.conf.DATA_STATUS or result_ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] == self.conf.DUMMY_DATA_STATUS:
+        if result_ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] == self.conf.DATA_STATUS:
             key = get_random_string(self.conf.BALL_SIZE - self.conf.BALL_STATUS_POSITION -1)
         
         # look in bins

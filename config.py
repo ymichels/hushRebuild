@@ -41,7 +41,7 @@ class config:
     SECOND_DATA_STATUS = b'\x04'
     
     # when adding a dummy that will behave as a real ball until the final layer needs to be rebuilt - when it'll be removed 
-    DUMMY_DATA_STATUS = b'\x05'
+    DUMMY_DATA_STATUS = b'\x05'  # YOU STOPPED HERE!!!
     DUMMY_SECOND_DATA_STATUS = b'\x06'
     
     def __init__(self, N=None):
