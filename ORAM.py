@@ -16,9 +16,9 @@ class ORAM:
         # power of two number of bins:
         number_of_blocks = (2**math.ceil(math.log(number_of_blocks/config.MU,2)))*config.MU
         self.conf = config(number_of_blocks)
-        self.dummy = self.conf.DUMMY_STATUS*self.conf.BALL_SIZE
         
         self.local_stash = {}
+        self.stash_reals_count = 0
         
         self.read_count = 0
         self.tables:list[HashTable]= []
@@ -37,7 +37,7 @@ class ORAM:
         final_table.emptyData()
         temp = final_table.data_ram
         final_table.data_ram = RAM(data_location, final_table.conf)
-        final_table.rebuild()
+        final_table.rebuild(reals=final_table.conf.N)
         final_table.data_ram = temp
         
     def access(self, op,  key, value = None) -> bytes:
@@ -64,7 +64,9 @@ class ORAM:
         if not is_found or original_key in self.local_stash.keys():
             dummy_ball = get_random_string(self.conf.BALL_SIZE,self.conf.BALL_STATUS_POSITION, self.conf.DUMMY_STATUS)
             self.local_stash[dummy_ball[self.conf.BALL_STATUS_POSITION+1:]] = dummy_ball
-
+        else: # else, something real was added to the stash.
+            self.stash_reals_count +=1
+            
         if not is_found:
             self.not_found += 1
             # print(f'key {key} not found')    
@@ -73,11 +75,13 @@ class ORAM:
         elif op == 'write':
             self.local_stash[ball[self.conf.BALL_STATUS_POSITION+1:]] = value + self.conf.DATA_STATUS + ball[self.conf.BALL_STATUS_POSITION+1:]
         self.read_count += 1
+        
         if len(self.local_stash) != self.read_count:
             print(8)
         if self.read_count == self.conf.MU:
             self.rebuild()
             self.local_stash = {}
+            self.stash_reals_count = 0
     
     def rebuild(self):
         self.read_count = 0
@@ -95,12 +99,12 @@ class ORAM:
             previous_table = self.tables[i-1]
             current_table = self.tables[i]
             if current_table.is_built:
-                current_table.copyToEndOfBins(previous_table.bins_ram)
+                current_table.copyToEndOfBins(previous_table.bins_ram, previous_table.reals_count)
                 current_table.intersperse()
                 current_table.is_built = False
             else:
                 current_table.data_ram = previous_table.bins_ram
-                current_table.rebuild()
+                current_table.rebuild(previous_table.reals_count)
                 return
         final_table = self.tables[-1]
         final_table.copyToEndOfBins(self.tables[-2].bins_ram)
@@ -117,6 +121,7 @@ class ORAM:
         stash_balls = list(self.local_stash.values())
         # stash_balls = hash_table_one.byte_operations.changeBallsStatus(stash_balls, self.conf.SECOND_DATA_STATUS)
         hash_table_one.bins_ram.writeChunks([[hash_table_one.conf.MU*hash_table_one.conf.BALL_SIZE, 2*hash_table_one.conf.MU*hash_table_one.conf.BALL_SIZE]], stash_balls)
+        hash_table_one.reals_count += self.stash_reals_count
         hash_table_one.intersperse()
         hash_table_one.is_built = False
     
@@ -127,6 +132,7 @@ class ORAM:
         hash_table_one.bins_ram.writeChunks([[0, hash_table_one.conf.BIN_SIZE_IN_BYTES]], cuckoo_hash.table1 + cuckoo_hash.table2)
         hash_table_one.local_stash = hash_table_one.byte_operations.ballsToDictionary(cuckoo_hash.stash)
         hash_table_one.is_built = True
+        hash_table_one.reals_count = self.stash_reals_count
         
         
             

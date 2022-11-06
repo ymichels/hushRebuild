@@ -19,7 +19,6 @@ class HashTable:
         self.overflow_ram = RAM(conf.OVERFLOW_LOCATION, conf)
         self.second_overflow_ram = RAM(conf.OVERFLOW_SECOND_LOCATION, conf)
         self.threshold_generator = ThresholdGenerator(conf)
-        self.dummy = b'\x00'*conf.BALL_SIZE
         self.local_stash = {}
 
     def createDummies(self, count):
@@ -65,7 +64,8 @@ class HashTable:
             current_write += self.conf.BIN_SIZE_IN_BYTES
         
 
-    def rebuild(self, final = False):
+    def rebuild(self, reals, final = False):
+        self.reals_count = reals
         self.conf.reset()
         self.local_stash = {}
         self.ballsIntoBins(final)
@@ -329,6 +329,7 @@ class HashTable:
         if ball != None:
             result_ball = ball
             del self.local_stash[key]
+            self.reals_count -= 1
         
         table1_location, table2_location = CuckooHash(self.conf).get_possible_addresses(key)
         
@@ -341,6 +342,7 @@ class HashTable:
         if ball[self.conf.BALL_STATUS_POSITION+1:] == key:
             result_ball = ball
             self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, replacement_ball)
+            self.reals_count -= 1
         else:
             self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, ball)
         
@@ -349,6 +351,7 @@ class HashTable:
         if ball[self.conf.BALL_STATUS_POSITION+1:] == key:
             result_ball = ball
             self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), replacement_ball)
+            self.reals_count -= 1
         else:
             self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), ball)
         
@@ -364,6 +367,7 @@ class HashTable:
         if ball[self.conf.BALL_STATUS_POSITION+1:] == key:
             result_ball = ball
             self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, replacement_ball) 
+            self.reals_count -= 1
         else:
             self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, ball) 
         
@@ -372,14 +376,16 @@ class HashTable:
         if ball[self.conf.BALL_STATUS_POSITION+1:] == key:
             result_ball = ball
             self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), replacement_ball)
+            self.reals_count -= 1
         else:
             self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), ball)
         
         return result_ball
 
     # this function copies the previous layer into the current layer for intersperse
-    def copyToEndOfBins(self, second_data_ram:RAM):
+    def copyToEndOfBins(self, second_data_ram:RAM, reals):
         current_read_pos = 0
+        self.reals_count += reals
         while current_read_pos < self.conf.DATA_SIZE:
             balls = second_data_ram.readChunks(
                 [(current_read_pos, current_read_pos + self.conf.LOCAL_MEMORY_SIZE)])
@@ -389,4 +395,7 @@ class HashTable:
             current_read_pos += self.conf.LOCAL_MEMORY_SIZE
     
     def intersperse(self):
+        5+5
+        
+    def mixHideIntersperse(self):
         5+5
