@@ -15,25 +15,42 @@ from utils.cuckoo_hash import CuckooHash
 # print(a.constructCapacityThresholdBall(21000,20000))
 # print(a.deconstructCapacityThresholdBall(a.constructCapacityThresholdBall(21000,20000)))
 
-a = ORAM(2**5*config.MU)
-
-a.cleanWriteMemory()
-# # a.tables[-1].is_built = True
-a.initial_build('testing_data.txt')
-data_ram = RAM('testing_data.txt', a.conf)
-for i in range(2**5*config.MU + 50_000):
-    ball_to_read = data_ram.readBall(random.randint(0,2**5*config.MU)*a.conf.BALL_SIZE)
+conf = config(2**2*config.MU)
+a = HashTable(conf)
+# a.createReadMemory()
+# a.cleanWriteMemory()
+a.rebuild(2**2*config.MU)
+data_ram = RAM('4/data.txt', a.conf)
+for i in range(2**1*config.MU):
+    ball_to_read = data_ram.readBall(random.randint(0,2**2*config.MU)*a.conf.BALL_SIZE)
     key = ball_to_read[1 + a.conf.BALL_STATUS_POSITION:]
-    a.access('read',key)
+    a.lookup(key)
     if i % 10_000 == 0:
         print('accesses: ',i)
-        print('not-found ratio: ', a.not_found/(i+1))
-    
-print('RAM.RT_WRITE: ', RAM.RT_WRITE)
-print('RAM.RT_READ: ', RAM.RT_READ)
-print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
-print('RAM.BALL_READ: ', RAM.BALL_READ)
-print('done!')
+        print('found ratio: ', a.reals_count)
+print(a.reals_count)
+
+#Final test
+if False:
+    a = ORAM(2**5*config.MU)
+
+    a.cleanWriteMemory()
+    # # a.tables[-1].is_built = True
+    a.initial_build('testing_data.txt')
+    data_ram = RAM('testing_data.txt', a.conf)
+    for i in range(2**5*config.MU + 50_000):
+        ball_to_read = data_ram.readBall(random.randint(0,2**5*config.MU)*a.conf.BALL_SIZE)
+        key = ball_to_read[1 + a.conf.BALL_STATUS_POSITION:]
+        a.access('read',key)
+        if i % 10_000 == 0:
+            print('accesses: ',i)
+            print('not-found ratio: ', a.not_found/(i+1))
+        
+    print('RAM.RT_WRITE: ', RAM.RT_WRITE)
+    print('RAM.RT_READ: ', RAM.RT_READ)
+    print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
+    print('RAM.BALL_READ: ', RAM.BALL_READ)
+    print('done!')
 # a.initial_build(a.tables[-1].data_ram.file_path)
 
 

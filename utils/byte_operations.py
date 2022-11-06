@@ -1,6 +1,7 @@
 from Cryptodome.Cipher import AES
 from RAM.ram import RAM
 from config import config
+from operator import itemgetter
 
 
 class ByteOperations:
@@ -8,6 +9,7 @@ class ByteOperations:
         self.conf = conf
         self.key_length = len(key)
         self.cipher = AES.new(key, AES.MODE_ECB)
+        self.empty_value = b'\x00'*conf.BALL_STATUS_POSITION
 
     
     def isBitOn(self, number, bit_num):
@@ -15,7 +17,7 @@ class ByteOperations:
 
 
     def getCapacity(self, capacity_ball):
-        if capacity_ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] != self.conf.DUMMY_STATUS:
+        if capacity_ball[: self.conf.BALL_STATUS_POSITION] != self.empty_value or capacity_ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] != self.conf.DUMMY_STATUS:
             return 0
         else:
             return int.from_bytes(capacity_ball, 'big', signed=False)
@@ -51,11 +53,23 @@ class ByteOperations:
             chunks.append((start + i*offset*self.conf.BALL_SIZE, start + i*offset*self.conf.BALL_SIZE + self.conf.BALL_SIZE))
         ram.writeChunks(chunks, balls)
 
-    def readTransposed(self, ram: RAM, offset, start, readLength):
+    def readTransposed(self, ram: RAM, offset, start, readLength, mixed_chunk = None):
         chunks = []
         for i in range(readLength):
             chunks.append((start + i*offset*self.conf.BALL_SIZE, start + i*offset*self.conf.BALL_SIZE + self.conf.BALL_SIZE))
         return ram.readChunks(chunks)
+    
+    def readTransposedGetMixedStripeIndexes(self, ram: RAM, offset, start, readLength, mixed_chunk):
+        chunks = []
+        mixed_start, mixed_end = mixed_chunk
+        mixed_indexes = []
+        for i in range(readLength):
+            if start + i*offset*self.conf.BALL_SIZE >= mixed_start and start + i*offset*self.conf.BALL_SIZE + self.conf.BALL_SIZE <= mixed_end:
+                mixed_indexes.append(i)
+            chunks.append((start + i*offset*self.conf.BALL_SIZE, start + i*offset*self.conf.BALL_SIZE + self.conf.BALL_SIZE))
+        balls = ram.readChunks(chunks)
+        # mixed_stripe = list(itemgetter(*balls)(mixed_indexes))
+        return balls, mixed_indexes
    
     
     def removeSecondDataStatus(self, balls):

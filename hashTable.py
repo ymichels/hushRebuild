@@ -7,6 +7,7 @@ from utils.cuckoo_hash import CuckooHash
 from utils.helper_functions import get_random_string, uniqueAccross
 from utils.oblivious_sort import ObliviousSort
 from config import config
+from operator import itemgetter
 
 class HashTable:
 
@@ -20,6 +21,12 @@ class HashTable:
         self.second_overflow_ram = RAM(conf.OVERFLOW_SECOND_LOCATION, conf)
         self.threshold_generator = ThresholdGenerator(conf)
         self.local_stash = {}
+        self.mixed_stripe_rams:list[RAM] = []
+        
+        bins = 1
+        while bins < conf.NUMBER_OF_BINS:
+            self.mixed_stripe_rams.append(RAM(conf.MIXED_STRIPE_LOCATION_FOLDER + '{}.txt'.format(bins)))
+        
 
     def createDummies(self, count):
         return [get_random_string(self.conf.BALL_SIZE, self.conf.BALL_STATUS_POSITION, self.conf.DUMMY_STATUS) for i in range(count)]
@@ -393,6 +400,56 @@ class HashTable:
             self.bins_ram.writeChunks(
                 [(self.conf.DATA_SIZE + current_read_pos, self.conf.DATA_SIZE + current_read_pos + self.conf.LOCAL_MEMORY_SIZE)], balls)
             current_read_pos += self.conf.LOCAL_MEMORY_SIZE
+    
+    def tightCompactionHideMixedStripe(self):
+        if self.conf.NUMBER_OF_BINS == 1:
+            balls = self.bins_ram.readChunks([(0,self.conf.BIN_SIZE_IN_BYTES)])
+            self.localTightCompaction(balls)
+            stash_balls = self.local_stash.values()
+            balls = balls[:self.conf.MU-len(stash_balls)] + stash_balls
+            self.bins_ram.writeChunks([(0,self.conf.BIN_SIZE_IN_BYTES)], balls)
+            return
+        self.copyOverflowToBins()
+        number_of_bins = self.conf.NUMBER_OF_BINS + self.conf.NUMBER_OF_BINS_IN_OVERFLOW
+        mixed_stripe_write = 0
+        for i in range(number_of_bins):
+            balls, mixed_indexes = self.byte_operations.readTransposedGetMixedStripeIndexes(self.bins_ram, number_of_bins, i*self.conf.BALL_SIZE, 2*self.conf.MU, self.getMixedStripeLocation())
+            balls = self.localTightCompaction(balls, [self.conf.DUMMY_STATUS])
+            mixed_stripe = list(itemgetter(*balls)(mixed_indexes))
+            self.mixed_stripe_rams[-1].writeChunks([(mixed_stripe_write, mixed_stripe_write + int(self.conf.BIN_SIZE_IN_BYTES/2))],mixed_stripe)
+            mixed_stripe_write += int(self.conf.BIN_SIZE_IN_BYTES/2)
+            self.byte_operations.writeTransposed(self.bins_ram, balls, number_of_bins, i*self.conf.BALL_SIZE)
+            # Yoy stopped here
+        
+    def getMixedStripeLocation(self):
+        if self.reals_count < self.conf.N/2:
+            return 0, self.conf.N*self.conf.BALL_SIZE
+        return (self.reals_count - self.conf.N/2)*self.conf.BALL_SIZE, (self.reals_count + self.conf.N/2)*self.conf.BALL_SIZE
+        
+    def copyOverflowToBins(self):
+        current_read_pos = 0
+        
+        while current_read_pos < self.conf.NUMBER_OF_BINS_IN_OVERFLOW*self.conf.BIN_SIZE_IN_BYTES:
+            balls = self.overflow_ram.readChunks(
+                [(current_read_pos, current_read_pos + self.conf.LOCAL_MEMORY_SIZE)])
+            self.reset_overflow_statuses(balls)
+            self.bins_ram.writeChunks(
+                [(self.conf.DATA_SIZE*2 + current_read_pos, self.conf.DATA_SIZE*2 + current_read_pos + self.conf.LOCAL_MEMORY_SIZE)], balls)
+            current_read_pos += self.conf.LOCAL_MEMORY_SIZE
+    
+    
+    def reset_overflow_statuses(self, balls):
+        stash_inserted = 0
+        for i,ball in enumerate(balls):
+            status = ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] 
+            if status == self.conf.STASH_DATA_STATUS:
+                balls[i] = self.byte_operations.changeBallStatus(ball, self.conf.DATA_STATUS)
+            elif status == self.conf.STASH_DUMMY_STATUS:
+                balls[i] = self.byte_operations.changeBallStatus(ball, self.conf.DUMMY_STATUS)
+            if status == self.conf.DUMMY_STATUS and stash_inserted < self.conf.STASH_SIZE and len(self.local_stash) != 0:
+                balls[i] = list(self.local_stash.items())[0][1]
+                del self.local_stash[self.local_stash.items()[0][0]]
+        
     
     def intersperse(self):
         5+5

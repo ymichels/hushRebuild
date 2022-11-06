@@ -37,7 +37,7 @@ class ORAM:
         final_table.emptyData()
         temp = final_table.data_ram
         final_table.data_ram = RAM(data_location, final_table.conf)
-        final_table.rebuild(reals=final_table.conf.N)
+        final_table.rebuild(final_table.conf.N)
         final_table.data_ram = temp
         
     def access(self, op,  key, value = None) -> bytes:
@@ -111,7 +111,7 @@ class ORAM:
         final_table.intersperse()
         final_table.binsTightCompaction()
         final_table.data_ram, final_table.bins_ram = final_table.bins_ram, final_table.data_ram
-        final_table.rebuild(True)
+        final_table.rebuild(final_table.conf.N,True)
         
         
                 
