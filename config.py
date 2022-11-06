@@ -39,10 +39,7 @@ class config:
     
     # we require a second data status for perposes of intersperse
     SECOND_DATA_STATUS = b'\x04'
-    
-    # when adding a dummy that will behave as a real ball until the final layer needs to be rebuilt - when it'll be removed 
-    DUMMY_DATA_STATUS = b'\x05'  # YOU STOPPED HERE!!!
-    DUMMY_SECOND_DATA_STATUS = b'\x06'
+    SECOND_DUMMY_STATUS = b'\x05'
     
     def __init__(self, N=None):
         if N == None:

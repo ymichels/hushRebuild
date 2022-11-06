@@ -63,8 +63,8 @@ class ByteOperations:
         for ball in balls:
             if ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] == self.conf.SECOND_DATA_STATUS:
                 result.append(self.changeBallStatus(ball, self.conf.DATA_STATUS))
-            elif ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] == self.conf.DUMMY_SECOND_DATA_STATUS:
-                result.append(self.changeBallStatus(ball, self.conf.DUMMY_DATA_STATUS))
+            elif ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] == self.conf.SECOND_DUMMY_STATUS:
+                result.append(self.changeBallStatus(ball, self.conf.DUMMY_STATUS))
             else:
                 result.append(ball)
         return result

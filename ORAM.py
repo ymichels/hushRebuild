@@ -62,8 +62,8 @@ class ORAM:
         
         # something must always be added to the stash
         if not is_found or original_key in self.local_stash.keys():
-            dummy_data_ball = get_random_string(self.conf.BALL_SIZE,self.conf.BALL_STATUS_POSITION, self.conf.DUMMY_DATA_STATUS)
-            self.local_stash[dummy_data_ball[self.conf.BALL_STATUS_POSITION+1:]] = dummy_data_ball
+            dummy_ball = get_random_string(self.conf.BALL_SIZE,self.conf.BALL_STATUS_POSITION, self.conf.DUMMY_STATUS)
+            self.local_stash[dummy_ball[self.conf.BALL_STATUS_POSITION+1:]] = dummy_ball
 
         if not is_found:
             self.not_found += 1
@@ -105,7 +105,7 @@ class ORAM:
         final_table = self.tables[-1]
         final_table.copyToEndOfBins(self.tables[-2].bins_ram)
         final_table.intersperse()
-        final_table.binsTightCompaction([self.conf.DUMMY_DATA_STATUS, self.conf.DUMMY_STATUS])
+        final_table.binsTightCompaction()
         final_table.data_ram, final_table.bins_ram = final_table.bins_ram, final_table.data_ram
         final_table.rebuild(True)
         
