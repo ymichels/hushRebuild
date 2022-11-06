@@ -19,15 +19,21 @@ conf = config(2**2*config.MU)
 a = HashTable(conf)
 # a.createReadMemory()
 # a.cleanWriteMemory()
+howMany = 0
 a.rebuild(2**2*config.MU)
-data_ram = RAM('4/data.txt', a.conf)
-for i in range(2**1*config.MU):
-    ball_to_read = data_ram.readBall(random.randint(0,2**2*config.MU)*a.conf.BALL_SIZE)
-    key = ball_to_read[1 + a.conf.BALL_STATUS_POSITION:]
-    a.lookup(key)
+a.tightCompactionHideMixedStripe()
+data_ram = RAM('4/bins.txt', a.conf)
+for i in range(2**2*config.MU +1):
+    ball_to_read = data_ram.readBall(i*a.conf.BALL_SIZE)
+    if i == 2**2*config.MU - 1:
+        print('reached the end')
+    if ball_to_read[conf.BALL_STATUS_POSITION: conf.BALL_STATUS_POSITION+1] != conf.DATA_STATUS:
+        howMany += 1
+        print('ERROR:', howMany)
+        
     if i % 10_000 == 0:
         print('accesses: ',i)
-        print('found ratio: ', a.reals_count)
+        # print('found ratio: ', a.reals_count)
 print(a.reals_count)
 
 #Final test

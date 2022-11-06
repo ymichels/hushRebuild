@@ -78,7 +78,7 @@ class ByteOperations:
             chunks.append((start + i*offset*self.conf.BALL_SIZE, start + i*offset*self.conf.BALL_SIZE + self.conf.BALL_SIZE))
         balls = ram.readChunks(chunks)
         
-        return balls[shift_position:] + balls[:shift_position]
+        return balls[shift:] + balls[:shift_position]
    
     def obliviousShiftData(self, ram, number_of_bins, shift_position):
         for i in range(number_of_bins):

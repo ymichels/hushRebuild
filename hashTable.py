@@ -21,7 +21,7 @@ class HashTable:
         self.second_overflow_ram = RAM(conf.OVERFLOW_SECOND_LOCATION, conf)
         self.threshold_generator = ThresholdGenerator(conf)
         self.local_stash = {}
-        self.mixed_stripe_ram = RAM(conf.MIXED_STRIPE_LOCATION)
+        self.mixed_stripe_ram = RAM(conf.MIXED_STRIPE_LOCATION, conf)
         
 
     def createDummies(self, count):
@@ -413,9 +413,9 @@ class HashTable:
         for i in range(number_of_bins):
             balls, mixed_indexes = self.byte_operations.readTransposedGetMixedStripeIndexes(self.bins_ram, number_of_bins, i*self.conf.BALL_SIZE, 2*self.conf.MU, mixed_stripe_start, mixed_stripe_end)
             balls = self.localTightCompaction(balls, [self.conf.DUMMY_STATUS])
-            mixed_stripe = list(itemgetter(*balls)(mixed_indexes))
-            self.mixed_stripe_ram.writeChunks([(mixed_stripe_write, mixed_stripe_write + int(self.conf.BIN_SIZE_IN_BYTES/2))],mixed_stripe)
-            mixed_stripe_write += int(self.conf.BIN_SIZE_IN_BYTES/2)
+            mixed_stripe = list(itemgetter(*mixed_indexes)(balls))
+            self.mixed_stripe_ram.writeChunks([(mixed_stripe_write, mixed_stripe_write + len(mixed_stripe)*self.conf.BALL_SIZE)],mixed_stripe)
+            mixed_stripe_write += len(mixed_stripe)*self.conf.BALL_SIZE
             self.byte_operations.writeTransposed(self.bins_ram, balls, number_of_bins, i*self.conf.BALL_SIZE)
         self.tightCompaction(int(self.conf.NUMBER_OF_BINS/2), self.mixed_stripe_ram)
         self.byte_operations.obliviousShiftData(self.mixed_stripe_ram, int(self.conf.NUMBER_OF_BINS/2), mixed_stripe_start)
@@ -440,7 +440,7 @@ class HashTable:
     def getMixedStripeLocation(self):
         if self.reals_count < self.conf.N/2:
             return 0, self.conf.N*self.conf.BALL_SIZE
-        return (self.reals_count - self.conf.N/2)*self.conf.BALL_SIZE, (self.reals_count + self.conf.N/2)*self.conf.BALL_SIZE
+        return int((self.reals_count - self.conf.N/2)*self.conf.BALL_SIZE), int((self.reals_count + self.conf.N/2)*self.conf.BALL_SIZE)
         
     def copyOverflowToBins(self):
         current_read_pos = 0
