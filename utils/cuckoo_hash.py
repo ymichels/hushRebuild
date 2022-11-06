@@ -1,33 +1,27 @@
 from Cryptodome.Cipher import AES
+from utils.helper_functions import get_random_string, uniqueAccross
 from RAM.ram import RAM
 from config import config
 from utils.byte_operations import ByteOperations
 
 class CuckooHash:
+    def createDummies(self, count):
+        return [get_random_string(self.conf.BALL_SIZE, self.conf.BALL_STATUS_POSITION, self.conf.DUMMY_STATUS) for i in range(count)]
+    
     def __init__(self, conf:config) -> None:
         self.conf = conf
         self.table1_byte_operations = ByteOperations(self.conf.CUCKOO_HASH_KEY_1, conf)
         self.table2_byte_operations = ByteOperations(self.conf.CUCKOO_HASH_KEY_2, conf)
-        self.dummy = self.conf.DUMMY_STATUS*self.conf.BALL_SIZE
-        self.table1 = [self.dummy]*self.conf.MU
-        self.table2 = [self.dummy]*self.conf.MU
+        self.table1 = self.createDummies(self.conf.MU)
+        self.table2 = self.createDummies(self.conf.MU)
         self.stash = []
-
-    def hashless_insert(self,balls):
-        for ball in balls:
-            for i in range(len(self.table1)):
-                if self.table1[i] == self.dummy:
-                    self.table1[i] = ball
-                    break
 
     def insert_bulk(self,balls):
         for ball in balls:
-            if ball == self.dummy:
+            if ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION+1] == self.conf.DUMMY_STATUS:
                 continue
             self.insert_ball(ball)
         print('stash size: ', len(self.stash))
-        # inserting the stash to the tables is done only so that in the tight-compaction the stash wouldn't be lost
-        self.hashless_insert(self.stash)
     
     def insert_ball(self,ball):
         seen_locations = []
@@ -41,7 +35,7 @@ class CuckooHash:
             location = self.table2_byte_operations.ballToPseudoRandomNumber(ball,self.conf.MU)
             evicted_ball = self.table2[location]
             self.table2[location] = ball
-            if evicted_ball == self.dummy:
+            if evicted_ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION+1] == self.conf.DUMMY_STATUS:
                 break
             ball = evicted_ball
             if len(seen_locations) > 2*self.conf.MU:

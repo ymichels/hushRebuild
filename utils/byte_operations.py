@@ -53,24 +53,37 @@ class ByteOperations:
             chunks.append((start + i*offset*self.conf.BALL_SIZE, start + i*offset*self.conf.BALL_SIZE + self.conf.BALL_SIZE))
         ram.writeChunks(chunks, balls)
 
-    def readTransposed(self, ram: RAM, offset, start, readLength, mixed_chunk = None):
+    def readTransposed(self, ram: RAM, offset, start, readLength):
         chunks = []
         for i in range(readLength):
             chunks.append((start + i*offset*self.conf.BALL_SIZE, start + i*offset*self.conf.BALL_SIZE + self.conf.BALL_SIZE))
         return ram.readChunks(chunks)
     
-    def readTransposedGetMixedStripeIndexes(self, ram: RAM, offset, start, readLength, mixed_chunk):
+    def readTransposedGetMixedStripeIndexes(self, ram: RAM, offset, start, readLength, mixed_start, mixed_end):
         chunks = []
-        mixed_start, mixed_end = mixed_chunk
         mixed_indexes = []
         for i in range(readLength):
             if start + i*offset*self.conf.BALL_SIZE >= mixed_start and start + i*offset*self.conf.BALL_SIZE + self.conf.BALL_SIZE <= mixed_end:
                 mixed_indexes.append(i)
             chunks.append((start + i*offset*self.conf.BALL_SIZE, start + i*offset*self.conf.BALL_SIZE + self.conf.BALL_SIZE))
         balls = ram.readChunks(chunks)
-        # mixed_stripe = list(itemgetter(*balls)(mixed_indexes))
         return balls, mixed_indexes
+
+    def readTransposedAndShifted(self, ram: RAM, offset, start, readLength, shift_position):
+        chunks = []
+        shift = 0
+        for i in range(readLength):
+            if start + i*offset*self.conf.BALL_SIZE < shift_position:
+                shift += 1
+            chunks.append((start + i*offset*self.conf.BALL_SIZE, start + i*offset*self.conf.BALL_SIZE + self.conf.BALL_SIZE))
+        balls = ram.readChunks(chunks)
+        
+        return balls[shift_position:] + balls[:shift_position]
    
+    def obliviousShiftData(self, ram, number_of_bins, shift_position):
+        for i in range(number_of_bins):
+            balls = self.readTransposedAndShifted(ram, number_of_bins, i*self.conf.BALL_SIZE, 2*self.conf.MU, shift_position)
+            self.writeTransposed(ram, balls, number_of_bins, i*self.conf.BALL_SIZE)
     
     def removeSecondDataStatus(self, balls):
         result = []

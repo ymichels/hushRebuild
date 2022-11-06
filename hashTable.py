@@ -21,11 +21,7 @@ class HashTable:
         self.second_overflow_ram = RAM(conf.OVERFLOW_SECOND_LOCATION, conf)
         self.threshold_generator = ThresholdGenerator(conf)
         self.local_stash = {}
-        self.mixed_stripe_rams:list[RAM] = []
-        
-        bins = 1
-        while bins < conf.NUMBER_OF_BINS:
-            self.mixed_stripe_rams.append(RAM(conf.MIXED_STRIPE_LOCATION_FOLDER + '{}.txt'.format(bins)))
+        self.mixed_stripe_ram = RAM(conf.MIXED_STRIPE_LOCATION)
         
 
     def createDummies(self, count):
@@ -240,16 +236,13 @@ class HashTable:
             # get the bin
             bin_data = self.bins_ram.readChunks([(current_bin_index*self.conf.BIN_SIZE_IN_BYTES, (current_bin_index +1)*self.conf.BIN_SIZE_IN_BYTES )])
             capacity, threshold = self.byte_operations.deconstructCapacityThresholdBall(bin_data[0])
-            overflow_data = bin_data[threshold+1:capacity+1]
             bin_data = bin_data[1:threshold+1]
-            bin_data, overflow_data = uniqueAccross(bin_data, overflow_data)
 
             # seperate data that is in the bin, and data that is in the overflow
                 
             # generate the cuckoo hash
             cuckoo_hash = CuckooHash(self.conf)
             cuckoo_hash.insert_bulk(bin_data)
-            cuckoo_hash.hashless_insert(overflow_data)
 
             # write the data
             hash_tables = cuckoo_hash.table1 + cuckoo_hash.table2
@@ -402,6 +395,8 @@ class HashTable:
             current_read_pos += self.conf.LOCAL_MEMORY_SIZE
     
     def tightCompactionHideMixedStripe(self):
+        
+        # individual case of one bin
         if self.conf.NUMBER_OF_BINS == 1:
             balls = self.bins_ram.readChunks([(0,self.conf.BIN_SIZE_IN_BYTES)])
             self.localTightCompaction(balls)
@@ -409,18 +404,39 @@ class HashTable:
             balls = balls[:self.conf.MU-len(stash_balls)] + stash_balls
             self.bins_ram.writeChunks([(0,self.conf.BIN_SIZE_IN_BYTES)], balls)
             return
+        
         self.copyOverflowToBins()
+        
         number_of_bins = self.conf.NUMBER_OF_BINS + self.conf.NUMBER_OF_BINS_IN_OVERFLOW
         mixed_stripe_write = 0
+        mixed_stripe_start, mixed_stripe_end = self.getMixedStripeLocation()
         for i in range(number_of_bins):
-            balls, mixed_indexes = self.byte_operations.readTransposedGetMixedStripeIndexes(self.bins_ram, number_of_bins, i*self.conf.BALL_SIZE, 2*self.conf.MU, self.getMixedStripeLocation())
+            balls, mixed_indexes = self.byte_operations.readTransposedGetMixedStripeIndexes(self.bins_ram, number_of_bins, i*self.conf.BALL_SIZE, 2*self.conf.MU, mixed_stripe_start, mixed_stripe_end)
             balls = self.localTightCompaction(balls, [self.conf.DUMMY_STATUS])
             mixed_stripe = list(itemgetter(*balls)(mixed_indexes))
-            self.mixed_stripe_rams[-1].writeChunks([(mixed_stripe_write, mixed_stripe_write + int(self.conf.BIN_SIZE_IN_BYTES/2))],mixed_stripe)
+            self.mixed_stripe_ram.writeChunks([(mixed_stripe_write, mixed_stripe_write + int(self.conf.BIN_SIZE_IN_BYTES/2))],mixed_stripe)
             mixed_stripe_write += int(self.conf.BIN_SIZE_IN_BYTES/2)
             self.byte_operations.writeTransposed(self.bins_ram, balls, number_of_bins, i*self.conf.BALL_SIZE)
-            # Yoy stopped here
+        self.tightCompaction(int(self.conf.NUMBER_OF_BINS/2), self.mixed_stripe_ram)
+        self.byte_operations.obliviousShiftData(self.mixed_stripe_ram, int(self.conf.NUMBER_OF_BINS/2), mixed_stripe_start)
         
+        current_write = 0
+        while current_write < self.conf.DATA_SIZE*2:
+            stripe_balls = self.mixed_stripe_ram.readChunks([(current_write % (self.conf.N*self.conf.BALL_SIZE), (current_write % (self.conf.N*self.conf.BALL_SIZE)) + self.conf.BIN_SIZE_IN_BYTES)])
+            bins_balls = self.bins_ram.readChunks([(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)])
+            if current_write > mixed_stripe_end or current_write + self.conf.BIN_SIZE_IN_BYTES < mixed_stripe_start:
+                self.bins_ram.writeChunks([(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)],bins_balls)
+            elif current_write >= mixed_stripe_start and current_write + self.conf.BIN_SIZE_IN_BYTES <= mixed_stripe_end:
+                self.bins_ram.writeChunks([(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)], stripe_balls)
+            elif current_write < mixed_stripe_start and current_write + self.conf.BIN_SIZE_IN_BYTES >= mixed_stripe_start:
+                edge_balls = bins_balls[:mixed_stripe_start - current_write] + stripe_balls[mixed_stripe_start - current_write:]
+                self.bins_ram.writeChunks([(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)], edge_balls)
+            elif current_write >= mixed_stripe_start and current_write + self.conf.BIN_SIZE_IN_BYTES <= mixed_stripe_end:
+                edge_balls = stripe_balls[:mixed_stripe_end - current_write] + bins_balls[mixed_stripe_end - current_write:]
+                self.bins_ram.writeChunks([(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)], edge_balls)
+            current_write += self.conf.BIN_SIZE_IN_BYTES
+        
+       
     def getMixedStripeLocation(self):
         if self.reals_count < self.conf.N/2:
             return 0, self.conf.N*self.conf.BALL_SIZE
