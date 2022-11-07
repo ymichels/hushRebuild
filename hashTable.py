@@ -116,7 +116,7 @@ class HashTable:
         dummies = []
         result = []
         for ball in balls:
-            if ball[self.conf.BALL_STATUS_POSITION:self.conf.BALL_STATUS_POSITION + 1 ] in dummy_statuses:
+            if ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1 ] in dummy_statuses:
                 dummies.append(ball)
             else:
                 result.append(ball)
@@ -192,7 +192,7 @@ class HashTable:
                 [(current_read_pos, current_read_pos + self.conf.LOCAL_MEMORY_SIZE)])
             
             # this is to get rid of SECOND_DATA_STATUS from the intersperse stage
-            balls = self.byte_operations.removeSecondDataStatus(balls)
+            balls = self.byte_operations.removeSecondStatus(balls)
             
             self._ballsIntoBins(balls)
             current_read_pos += self.conf.LOCAL_MEMORY_SIZE
@@ -397,6 +397,12 @@ class HashTable:
                 [(self.conf.DATA_SIZE + current_read_pos, self.conf.DATA_SIZE + current_read_pos + self.conf.LOCAL_MEMORY_SIZE)], balls)
             current_read_pos += self.conf.LOCAL_MEMORY_SIZE
     
+    
+    
+    def extract(self):
+        self.tightCompactionHideMixedStripe()
+        self.intersperseHideMixedStripe()
+    
     def tightCompactionHideMixedStripe(self):
         
         # individual case of one bin
@@ -471,7 +477,24 @@ class HashTable:
         
     
     def intersperse(self):
-        5+5
-        
-    def mixHideIntersperse(self):
+        self.markAuxiliary()
+        self.binsTightCompaction([self.conf.SECOND_DATA_STATUS, self.conf.SECOND_DUMMY_STATUS])
+    
+    def markAuxiliary(self):
+        current_write = 0
+        ones = self.conf.N
+        all = 2*self.conf.N
+        while current_write < 2*self.conf.DATA_SIZE:
+            bin = self.data_ram.readChunks([(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)])
+            for i,ball in enumerate(bin):
+                assignment = random.uniform(0, 1) < ones/all
+                if assignment:
+                    bin[i] = self.byte_operations.switchToSecondStatus(ball)
+                    ones -= 1
+                all -= 1
+            self.data_ram.writeChunks(
+                [(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)], bin)
+            current_write += self.conf.BIN_SIZE_IN_BYTES
+    
+    def intersperseHideMixedStripe(self):
         5+5
