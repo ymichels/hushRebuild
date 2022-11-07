@@ -100,7 +100,7 @@ class ORAM:
             current_table = self.tables[i]
             if current_table.is_built:
                 current_table.copyToEndOfBins(previous_table.bins_ram, previous_table.reals_count)
-                # current_table.intersperse()
+                current_table.intersperse()
                 current_table.is_built = False
             else:
                 current_table.data_ram = previous_table.bins_ram
@@ -135,5 +135,3 @@ class ORAM:
         
         
             
-# What's missing:
-# 2. implement intersperse - mind the gaps filled with dummies.
