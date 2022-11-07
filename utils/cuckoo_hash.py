@@ -1,15 +1,16 @@
 from Cryptodome.Cipher import AES
-from utils.helper_functions import get_random_string, uniqueAccross
+from utils.helper_functions import get_random_string
 from RAM.ram import RAM
 from config import config
 from utils.byte_operations import ByteOperations
 
 class CuckooHash:
     def createDummies(self, count):
-        return [get_random_string(self.conf.BALL_SIZE, self.conf.BALL_STATUS_POSITION, self.conf.DUMMY_STATUS) for i in range(count)]
+        return [self.dummy]*count
     
     def __init__(self, conf:config) -> None:
         self.conf = conf
+        self.dummy = conf.DUMMY_STATUS*conf.BALL_SIZE
         self.table1_byte_operations = ByteOperations(self.conf.CUCKOO_HASH_KEY_1, conf)
         self.table2_byte_operations = ByteOperations(self.conf.CUCKOO_HASH_KEY_2, conf)
         self.table1 = self.createDummies(self.conf.MU)

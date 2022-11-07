@@ -90,7 +90,7 @@ class ORAM:
             return
         for table in self.tables:
             if table.is_built:
-                table.binsTightCompaction()
+                table.tightCompactionHideMixedStripe()
             else:
                 break
         
@@ -107,11 +107,11 @@ class ORAM:
                 current_table.rebuild(previous_table.reals_count)
                 return
         final_table = self.tables[-1]
-        final_table.copyToEndOfBins(self.tables[-2].bins_ram)
+        final_table.copyToEndOfBins(self.tables[-2].bins_ram, self.tables[-2].reals_count)
         final_table.intersperse()
         final_table.binsTightCompaction()
         final_table.data_ram, final_table.bins_ram = final_table.bins_ram, final_table.data_ram
-        final_table.rebuild(final_table.conf.N,True)
+        final_table.rebuild(final_table.conf.N)
         
         
                 

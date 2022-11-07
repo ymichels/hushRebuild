@@ -4,10 +4,11 @@ from collections import defaultdict
 from utils.byte_operations import ByteOperations
 from thresholdGenerator import ThresholdGenerator
 from utils.cuckoo_hash import CuckooHash
-from utils.helper_functions import get_random_string, uniqueAccross
+from utils.helper_functions import get_random_string
 from utils.oblivious_sort import ObliviousSort
 from config import config
 from operator import itemgetter
+import random
 
 class HashTable:
 
@@ -23,10 +24,12 @@ class HashTable:
         self.local_stash = {}
         self.mixed_stripe_ram = RAM(conf.MIXED_STRIPE_LOCATION, conf)
         self.cuckoo = CuckooHash(conf)
+        self.dummy = conf.DUMMY_STATUS*conf.BALL_SIZE
+        
         
 
     def createDummies(self, count):
-        return [get_random_string(self.conf.BALL_SIZE, self.conf.BALL_STATUS_POSITION, self.conf.DUMMY_STATUS) for i in range(count)]
+        return [self.dummy]*count
     # This function creates random data for testing.
     def createReadMemory(self):
         current_write = 0
@@ -68,11 +71,11 @@ class HashTable:
             current_write += self.conf.BIN_SIZE_IN_BYTES
         
 
-    def rebuild(self, reals, final = False):
+    def rebuild(self, reals):
         self.reals_count = reals
         self.conf.reset()
         self.local_stash = {}
-        self.ballsIntoBins(final)
+        self.ballsIntoBins()
         self.moveSecretLoad()
         self.tightCompaction(self.conf.NUMBER_OF_BINS_IN_OVERFLOW, self.overflow_ram)
         self.cuckooHashBins()
@@ -182,15 +185,11 @@ class HashTable:
         
         return capacity_threshold_balls
 
-    def ballsIntoBins(self, final):
+    def ballsIntoBins(self):
         current_read_pos = 0
-        end = self.conf.DATA_SIZE*2 if final else self.conf.DATA_SIZE
-        while current_read_pos < end:
+        while current_read_pos < self.conf.DATA_SIZE:
             balls = self.data_ram.readChunks(
                 [(current_read_pos, current_read_pos + self.conf.LOCAL_MEMORY_SIZE)])
-            
-            if final:
-                balls = list(filter(lambda ball: ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] == self.conf.DATA_STATUS,balls))
             
             # this is to get rid of SECOND_DATA_STATUS from the intersperse stage
             balls = self.byte_operations.removeSecondDataStatus(balls)
@@ -201,8 +200,11 @@ class HashTable:
     def _ballsIntoBins(self, balls):
         local_bins_dict = defaultdict(list)
         for ball in balls:
-            local_bins_dict[self.byte_operations.ballToPseudoRandomNumber(
-                ball, self.conf.NUMBER_OF_BINS)].append(ball)
+            if ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] == self.conf.DUMMY_STATUS:
+                local_bins_dict[int(random.randint(0,self.conf.NUMBER_OF_BINS-1))].append(self.dummy)
+            else:
+                local_bins_dict[self.byte_operations.ballToPseudoRandomNumber(
+                    ball, self.conf.NUMBER_OF_BINS)].append(ball)
         start_locations = [bin_num *
                           self.conf.BIN_SIZE_IN_BYTES for bin_num in local_bins_dict.keys()]
         bins_capacity = zip(local_bins_dict.keys(),
@@ -400,10 +402,10 @@ class HashTable:
         # individual case of one bin
         if self.conf.NUMBER_OF_BINS == 1:
             balls = self.bins_ram.readChunks([(0,self.conf.BIN_SIZE_IN_BYTES)])
-            self.localTightCompaction(balls)
-            stash_balls = self.local_stash.values()
+            balls = self.localTightCompaction(balls, [self.conf.DUMMY_STATUS])
+            stash_balls = list(self.local_stash.values())
             balls = balls[:self.conf.MU-len(stash_balls)] + stash_balls
-            self.bins_ram.writeChunks([(0,self.conf.BIN_SIZE_IN_BYTES)], balls)
+            self.bins_ram.writeChunks([(0,self.conf.MU * self.conf.BALL_SIZE)], balls)
             return
         
         self.copyOverflowToBins()
