@@ -22,6 +22,7 @@ class HashTable:
         self.threshold_generator = ThresholdGenerator(conf)
         self.local_stash = {}
         self.mixed_stripe_ram = RAM(conf.MIXED_STRIPE_LOCATION, conf)
+        self.cuckoo = CuckooHash(conf)
         
 
     def createDummies(self, count):
@@ -331,7 +332,7 @@ class HashTable:
             del self.local_stash[key]
             self.reals_count -= 1
         
-        table1_location, table2_location = CuckooHash(self.conf).get_possible_addresses(key)
+        table1_location, table2_location = self.cuckoo.get_possible_addresses(key)
         
         # look in overflow
         bin_num = self.byte_operations.keyToPseudoRandomNumber(key, self.conf.NUMBER_OF_BINS_IN_OVERFLOW)

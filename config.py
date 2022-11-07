@@ -25,7 +25,7 @@ class config:
     OVERFLOW_LOCATION = 'overflow.txt'
     # This is for the oblivious balls into bins so that the bins would not be overriden.
     OVERFLOW_SECOND_LOCATION = 'second_overflow.txt'
-    MIXED_STRIPE_LOCATION = 'mixed_stripes.txt'
+    MIXED_STRIPE_LOCATION = 'mixed_stripe.txt'
 
     MAIN_KEY = b'Sixteen byte key'
     CUCKOO_HASH_KEY_1 = b'Cuckoo hash key1'
@@ -57,7 +57,7 @@ class config:
         self.OVERFLOW_LOCATION = '{}/overflow.txt'.format(self.NUMBER_OF_BINS)
         # This is for the oblivious balls into bins so that the bins would not be overriden.
         self.OVERFLOW_SECOND_LOCATION = '{}/second_overflow.txt'.format(self.NUMBER_OF_BINS)
-        self.MIXED_STRIPE_LOCATION = '{}/mixed_stripes.txt'.format(self.NUMBER_OF_BINS)
+        self.MIXED_STRIPE_LOCATION = '{}/mixed_stripe.txt'.format(self.NUMBER_OF_BINS)
         
         
         
