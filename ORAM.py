@@ -100,7 +100,7 @@ class ORAM:
             current_table = self.tables[i]
             if current_table.is_built:
                 current_table.copyToEndOfBins(previous_table.bins_ram, previous_table.reals_count)
-                current_table.intersperse()
+                # current_table.intersperse()
                 current_table.is_built = False
             else:
                 current_table.data_ram = previous_table.bins_ram
@@ -120,7 +120,8 @@ class ORAM:
         # stash_balls = hash_table_one.byte_operations.changeBallsStatus(stash_balls, self.conf.SECOND_DATA_STATUS)
         hash_table_one.bins_ram.writeChunks([[hash_table_one.conf.MU*hash_table_one.conf.BALL_SIZE, 2*hash_table_one.conf.MU*hash_table_one.conf.BALL_SIZE]], stash_balls)
         hash_table_one.reals_count += self.stash_reals_count
-        hash_table_one.intersperse()
+        # TODO: intersperse them!
+        # hash_table_one.intersperse()
         hash_table_one.is_built = False
     
     def rebuildLevelOne(self):

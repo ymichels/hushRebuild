@@ -15,27 +15,28 @@ from utils.cuckoo_hash import CuckooHash
 # print(a.constructCapacityThresholdBall(21000,20000))
 # print(a.deconstructCapacityThresholdBall(a.constructCapacityThresholdBall(21000,20000)))
 
-# conf = config(2**0*config.MU)
-# # a = HashTable(conf)
-# # a.createReadMemory()
-# # a.cleanWriteMemory()
+# conf = config(2**1*config.MU)
+# a = HashTable(conf)
+# a.createReadMemory()
+# a.cleanWriteMemory()
+# a.rebuild(2**1*config.MU)
+# data_ram = RAM('2/data.txt', a.conf)
+# for i in range(2**0*config.MU):
+#     ball_to_read = data_ram.readBall(random.randint(0,2**1*config.MU)*a.conf.BALL_SIZE)
+#     a.lookup(ball_to_read[1 + a.conf.BALL_STATUS_POSITION:])    
+#     if i % 10_000 == 0:
+#         print('accesses: ',i)
+
+
+
+# print(a.reals_count)
+# a.tightCompactionHideMixedStripe()
+# ######################################### test level 8
 # howMany = 0
-# # a.rebuild(2**2*config.MU)
-# # data_ram = RAM('4/data.txt', a.conf)
-# # for i in range(2**1*config.MU):
-# #     ball_to_read = data_ram.readBall(random.randint(0,2**2*config.MU)*a.conf.BALL_SIZE)
-# #     a.lookup(ball_to_read[1 + a.conf.BALL_STATUS_POSITION:])    
-# #     if i % 10_000 == 0:
-# #         print('accesses: ',i)
-
-
-
-# # print(a.reals_count)
-# # a.tightCompactionHideMixedStripe()
-# data_ram = RAM('1/bins.txt', conf)
-# for i in range(2**1*config.MU +1):
+# data_ram = RAM('4/bins.txt', conf)
+# for i in range(2**2*config.MU +1):
 #     ball_to_read = data_ram.readBall(i*conf.BALL_SIZE)
-#     if i == 2**0*config.MU - 1:
+#     if i == a.reals_count -1:
 #         print('reached the end')
 #     if ball_to_read[conf.BALL_STATUS_POSITION: conf.BALL_STATUS_POSITION+1] != conf.DATA_STATUS:
 #         howMany += 1
@@ -43,19 +44,21 @@ from utils.cuckoo_hash import CuckooHash
         
 #     if i % 10_000 == 0:
 #         print('accesses: ',i)
+###########################################
+        
         # print('found ratio: ', a.reals_count)
 # print(a.reals_count)
 
 #Final test
 if True:
-    a = ORAM(2**3*config.MU)
+    a = ORAM(2**4*config.MU)
 
     a.cleanWriteMemory()
     # # a.tables[-1].is_built = True
     a.initial_build('testing_data.txt')
     data_ram = RAM('testing_data.txt', a.conf)
-    for i in range(2**3*config.MU + 50_000):
-        ball_to_read = data_ram.readBall(random.randint(0,2**3*config.MU)*a.conf.BALL_SIZE)
+    for i in range(2**4*config.MU + 50_000):
+        ball_to_read = data_ram.readBall(random.randint(0,2**4*config.MU)*a.conf.BALL_SIZE)
         key = ball_to_read[1 + a.conf.BALL_STATUS_POSITION:]
         a.access('read',key)
         if i % 10_000 == 0:
