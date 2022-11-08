@@ -15,14 +15,14 @@ from utils.cuckoo_hash import CuckooHash
 # print(a.constructCapacityThresholdBall(21000,20000))
 # print(a.deconstructCapacityThresholdBall(a.constructCapacityThresholdBall(21000,20000)))
 
-# conf = config(2**1*config.MU)
+# conf = config(2**2*config.MU)
 # a = HashTable(conf)
 # a.createReadMemory()
 # a.cleanWriteMemory()
-# a.rebuild(2**1*config.MU)
-# data_ram = RAM('2/data.txt', a.conf)
-# for i in range(2**0*config.MU):
-#     ball_to_read = data_ram.readBall(random.randint(0,2**1*config.MU)*a.conf.BALL_SIZE)
+# a.rebuild(2**2*config.MU)
+# data_ram = RAM('4/data.txt', a.conf)
+# for i in range(2**1*config.MU):
+#     ball_to_read = data_ram.readBall(random.randint(0,2**2*config.MU)*a.conf.BALL_SIZE)
 #     a.lookup(ball_to_read[1 + a.conf.BALL_STATUS_POSITION:])    
 #     if i % 10_000 == 0:
 #         print('accesses: ',i)
@@ -30,10 +30,10 @@ from utils.cuckoo_hash import CuckooHash
 
 
 # print(a.reals_count)
-# a.tightCompactionHideMixedStripe()
-# ######################################### test level 8
+# a.extract()
+# # # ######################################### test level 8
 # howMany = 0
-# data_ram = RAM('4/bins.txt', conf)
+# data_ram = RAM('8/bins.txt', conf)
 # for i in range(2**2*config.MU +1):
 #     ball_to_read = data_ram.readBall(i*conf.BALL_SIZE)
 #     if i == a.reals_count -1:
@@ -44,6 +44,8 @@ from utils.cuckoo_hash import CuckooHash
         
 #     if i % 10_000 == 0:
 #         print('accesses: ',i)
+# print('is this:', 2**3*config.MU - howMany)
+# print('eq to this:', a.reals_count)
 ###########################################
         
         # print('found ratio: ', a.reals_count)
@@ -51,16 +53,22 @@ from utils.cuckoo_hash import CuckooHash
 
 #Final test
 if True:
-    a = ORAM(2**5*config.MU)
-
+    s = 2**5*config.MU
+    a = ORAM(s)
     a.cleanWriteMemory()
     # # a.tables[-1].is_built = True
     a.initial_build('testing_data.txt')
     data_ram = RAM('testing_data.txt', a.conf)
-    for i in range(2**5*config.MU + 50_000):
-        ball_to_read = data_ram.readBall(random.randint(0,2**5*config.MU)*a.conf.BALL_SIZE)
+    o = 0
+    j=0
+    for i in range(s + 50_000):
+        ball_to_read = data_ram.readBall(random.randint(0,s-1)*a.conf.BALL_SIZE)
         key = ball_to_read[1 + a.conf.BALL_STATUS_POSITION:]
         a.access('read',key)
+        j+=1
+        if o != a.not_found:
+            o= a.not_found
+            j=0
         if i % 10_000 == 0:
             print('accesses: ',i)
             print('not-found ratio: ', a.not_found/(i+1))

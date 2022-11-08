@@ -7,7 +7,7 @@ from config import config
 from hashTable import HashTable
 from utils.cuckoo_hash import CuckooHash
 from utils.helper_functions import get_random_string
-
+import random
 
 class ORAM:
 
@@ -88,13 +88,14 @@ class ORAM:
         if not self.tables[0].is_built:
             self.rebuildLevelOne()
             return
-        for table in self.tables:
+        for table in self.tables[1:]:
             if table.is_built:
                 table.extract()
             else:
                 break
         
-        self.intersperseStashAndLevelOne()
+        self.extractLevelOne()
+        
         for i in range(1, len(self.tables)):
             previous_table = self.tables[i-1]
             current_table = self.tables[i]
@@ -107,18 +108,30 @@ class ORAM:
                 current_table.rebuild(previous_table.reals_count)
                 return
         final_table = self.tables[-1]
+        final_table.tightCompactionHideMixedStripe()
         final_table.binsTightCompaction([final_table.conf.DUMMY_STATUS, final_table.conf.SECOND_DUMMY_STATUS])
-        final_table.data_ram, final_table.bins_ram = final_table.bins_ram, final_table.data_ram
-        final_table.rebuild(final_table.conf.N)
+        final_table.rebuild(final_table.conf.N, True)
+    
+    def extractLevelOne(self):
+        self.tightCompactionLevelOne()
+        self.intersperseStashAndLevelOne()   
         
-        
-                
+    def tightCompactionLevelOne(self):
+        hash_table_one = self.tables[0]
+        balls = hash_table_one.bins_ram.readChunks([(0,self.conf.BIN_SIZE_IN_BYTES)])
+        balls = hash_table_one.localTightCompaction(balls, [self.conf.DUMMY_STATUS])
+        stash_balls = list(hash_table_one.local_stash.values())
+        balls = balls[:self.conf.MU-len(stash_balls)] + stash_balls
+        random.shuffle(balls)
+        hash_table_one.bins_ram.writeChunks([(0,hash_table_one.conf.MU * hash_table_one.conf.BALL_SIZE)], balls)           
     
     def intersperseStashAndLevelOne(self):
         hash_table_one = self.tables[0]
-        stash_balls = list(self.local_stash.values())
+        balls = list(self.local_stash.values())
+        balls.extend(hash_table_one.bins_ram.readChunks([[0, hash_table_one.conf.MU*hash_table_one.conf.BALL_SIZE]]))
         # stash_balls = hash_table_one.byte_operations.changeBallsStatus(stash_balls, self.conf.SECOND_DATA_STATUS)
-        hash_table_one.bins_ram.writeChunks([[hash_table_one.conf.MU*hash_table_one.conf.BALL_SIZE, 2*hash_table_one.conf.MU*hash_table_one.conf.BALL_SIZE]], stash_balls)
+        random.shuffle(balls)
+        hash_table_one.bins_ram.writeChunks([[0, 2*hash_table_one.conf.MU*hash_table_one.conf.BALL_SIZE]], balls)
         hash_table_one.reals_count += self.stash_reals_count
         # TODO: intersperse them!
         # hash_table_one.intersperse()
