@@ -73,11 +73,10 @@ class HashTable:
             current_write += self.conf.BIN_SIZE_IN_BYTES
         
 
-    def rebuild(self, reals, final = False):
+    def rebuild(self, reals):
         self.reals_count = reals
-        self.conf.reset()
         self.local_stash = {}
-        self.ballsIntoBins(final)
+        self.ballsIntoBins()
         self.moveSecretLoad()
         self.tightCompaction(self.conf.NUMBER_OF_BINS_IN_OVERFLOW, self.overflow_ram)
         self.cuckooHashBins()
@@ -192,25 +191,27 @@ class HashTable:
         
         return capacity_threshold_balls
 
-    def ballsIntoBins(self, final):
+    def ballsIntoBins(self):
         current_read_pos = 0
         balls = []
-        end = self.conf.DATA_SIZE
         
         # in the final table to save space, the rams switch.
-        if final:
+        if self.conf.FINAL:
             self.data_ram, self.bins_ram = self.bins_ram, self.data_ram
-            end *= 2
         
-        while current_read_pos < end:
+        while current_read_pos < self.bins_ram.getSize():
             balls = self.data_ram.readChunks(
                 [(current_read_pos, current_read_pos + self.conf.LOCAL_MEMORY_SIZE)])
             
             # this is to get rid of SECOND_DATA_STATUS from the intersperse stage
-            balls = self.byte_operations.removeSecondStatus(balls, final)
+            balls = self.byte_operations.removeSecondStatus(balls)
             
             self._ballsIntoBins(balls)
             current_read_pos += self.conf.LOCAL_MEMORY_SIZE
+        
+        
+        self.conf.reset()
+        
             
             
 

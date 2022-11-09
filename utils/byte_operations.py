@@ -85,10 +85,10 @@ class ByteOperations:
             balls = self.readTransposedAndShifted(ram, number_of_bins, i*self.conf.BALL_SIZE, 2*self.conf.MU, shift_position)
             self.writeTransposed(ram, balls, number_of_bins, i*self.conf.BALL_SIZE)
     
-    def removeSecondStatus(self, balls, final = False):
+    def removeSecondStatus(self, balls):
         result = []
         for ball in balls:
-            if ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] in [self.conf.SECOND_DUMMY_STATUS, self.conf.DUMMY_STATUS] and final:
+            if ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] in [self.conf.SECOND_DUMMY_STATUS, self.conf.DUMMY_STATUS] and self.conf.FINAL:
                 continue
             elif ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] == self.conf.SECOND_DATA_STATUS:
                 result.append(self.changeBallStatus(ball, self.conf.DATA_STATUS))

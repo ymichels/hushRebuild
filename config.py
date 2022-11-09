@@ -13,7 +13,7 @@ class config:
     BIN_SIZE_IN_BYTES = BIN_SIZE*BALL_SIZE
     EPSILON = 1/LOG_LAMBDA
     STASH_SIZE = 2*LOG_LAMBDA
-
+    FINAL = False
 
     DATA_SIZE = N*BALL_SIZE
     OVERFLOW_SIZE = math.ceil(DATA_SIZE*EPSILON)
@@ -69,6 +69,7 @@ class config:
         self.DATA_SIZE = self.N*self.BALL_SIZE
         self.OVERFLOW_SIZE = math.ceil(self.DATA_SIZE*self.EPSILON)
         self.NUMBER_OF_BINS_IN_OVERFLOW = math.ceil(self.EPSILON*self.N/self.MU)
+        self.FINAL = False
         
         
 # logn = 20

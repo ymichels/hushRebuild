@@ -33,7 +33,7 @@ if False:
     
 #Debug test
 if True:
-    oram_size = 2**3*config.MU
+    oram_size = 2**5*config.MU
     oram = ORAM(oram_size)
     oram.cleanWriteMemory()
     oram.initial_build('testing_data.txt')

@@ -116,7 +116,7 @@ class ORAM:
         # for purposes of efficiency, in the final build - the write locations switch...
         final_table.conf.FINAL = True
         final_table.binsTightCompaction([final_table.conf.DUMMY_STATUS, final_table.conf.SECOND_DUMMY_STATUS])
-        final_table.rebuild(final_table.conf.N, True)
+        final_table.rebuild(final_table.conf.N)
     
     def extractLevelOne(self):
         # TODO: this can be done more efficiently if written in the same function
