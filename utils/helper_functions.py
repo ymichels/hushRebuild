@@ -11,6 +11,3 @@ def get_random_string(length, BALL_STATUS_POSITION=None, status=None):
         
     # return random string
     return bytes(result_str,'utf-8')
-
-def unique(list1):
-    return list(set(list1))

@@ -14,7 +14,6 @@ class RAM:
         if not os.path.isfile(file_path):
             output_file.parent.mkdir(exist_ok=True, parents=True)
             output_file.write_text("")
-        # os.makedirs(os.path.dirname(file_path), exist_ok=True)
         self.file = open(file_path, 'r+b')
 
 
@@ -68,3 +67,7 @@ class RAM:
         self.file.seek(0,2)
         self.file.write(b''.join(balls))
 
+    def getSize(self):
+        if self.conf.FINAL:
+            return 2*self.conf.DATA_SIZE
+        return self.conf.DATA_SIZE

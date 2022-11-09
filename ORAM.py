@@ -13,6 +13,7 @@ class ORAM:
 
     def __init__(self, number_of_blocks) -> None:
         self.not_found = 0
+        
         # power of two number of bins:
         number_of_blocks = (2**math.ceil(math.log(number_of_blocks/config.MU,2)))*config.MU
         self.conf = config(number_of_blocks)
@@ -31,10 +32,11 @@ class ORAM:
     def cleanWriteMemory(self):
         for table in self.tables:
             table.cleanWriteMemory()
+        final_table = self.tables[-1]
+        final_table.emptyData()
     
     def initial_build(self, data_location) -> None:
         final_table = self.tables[-1]
-        final_table.emptyData()
         temp = final_table.data_ram
         final_table.data_ram = RAM(data_location, final_table.conf)
         final_table.rebuild(final_table.conf.N)
@@ -62,6 +64,7 @@ class ORAM:
         
         # something must always be added to the stash
         if not is_found or original_key in self.local_stash.keys():
+            # (creating a dummy ball might not be necessary)
             dummy_ball = get_random_string(self.conf.BALL_SIZE,self.conf.BALL_STATUS_POSITION, self.conf.DUMMY_STATUS)
             self.local_stash[dummy_ball[self.conf.BALL_STATUS_POSITION+1:]] = dummy_ball
         else: # else, something real was added to the stash.
@@ -69,32 +72,33 @@ class ORAM:
             
         if not is_found:
             self.not_found += 1
-            # print(f'key {key} not found')    
+            print(f'key {key} not found')    
         elif op == 'read':
             self.local_stash[ball[self.conf.BALL_STATUS_POSITION+1:]] = ball
         elif op == 'write':
             self.local_stash[ball[self.conf.BALL_STATUS_POSITION+1:]] = value + self.conf.DATA_STATUS + ball[self.conf.BALL_STATUS_POSITION+1:]
         self.read_count += 1
         
-        if len(self.local_stash) != self.read_count:
-            print(8)
         if self.read_count == self.conf.MU:
+            self.read_count = 0 
             self.rebuild()
             self.local_stash = {}
             self.stash_reals_count = 0
     
     def rebuild(self):
-        self.read_count = 0
+        
         if not self.tables[0].is_built:
             self.rebuildLevelOne()
             return
+        
+        # extract built layers
+        self.extractLevelOne()
         for table in self.tables[1:]:
             if table.is_built:
                 table.extract()
             else:
                 break
         
-        self.extractLevelOne()
         
         for i in range(1, len(self.tables)):
             previous_table = self.tables[i-1]
@@ -108,11 +112,14 @@ class ORAM:
                 current_table.rebuild(previous_table.reals_count)
                 return
         final_table = self.tables[-1]
-        final_table.tightCompactionHideMixedStripe()
+        
+        # for purposes of efficiency, in the final build - the write locations switch...
+        final_table.conf.FINAL = True
         final_table.binsTightCompaction([final_table.conf.DUMMY_STATUS, final_table.conf.SECOND_DUMMY_STATUS])
         final_table.rebuild(final_table.conf.N, True)
     
     def extractLevelOne(self):
+        # TODO: this can be done more efficiently if written in the same function
         self.tightCompactionLevelOne()
         self.intersperseStashAndLevelOne()   
         
@@ -129,12 +136,9 @@ class ORAM:
         hash_table_one = self.tables[0]
         balls = list(self.local_stash.values())
         balls.extend(hash_table_one.bins_ram.readChunks([[0, hash_table_one.conf.MU*hash_table_one.conf.BALL_SIZE]]))
-        # stash_balls = hash_table_one.byte_operations.changeBallsStatus(stash_balls, self.conf.SECOND_DATA_STATUS)
         random.shuffle(balls)
         hash_table_one.bins_ram.writeChunks([[0, 2*hash_table_one.conf.MU*hash_table_one.conf.BALL_SIZE]], balls)
         hash_table_one.reals_count += self.stash_reals_count
-        # TODO: intersperse them!
-        # hash_table_one.intersperse()
         hash_table_one.is_built = False
     
     def rebuildLevelOne(self):

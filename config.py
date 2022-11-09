@@ -23,8 +23,11 @@ class config:
     DATA_LOCATION = 'data.txt'
     BINS_LOCATION = 'bins.txt'
     OVERFLOW_LOCATION = 'overflow.txt'
-    # This is for the oblivious balls into bins so that the bins would not be overriden.
+    
+    # This is for the oblivious balls into bins so that the bins would not be overridden.
     OVERFLOW_SECOND_LOCATION = 'second_overflow.txt'
+    
+    
     MIXED_STRIPE_LOCATION = 'mixed_stripe.txt'
 
     MAIN_KEY = b'Sixteen byte key'
