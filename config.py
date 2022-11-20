@@ -2,10 +2,16 @@ import math
 
 from utils.helper_functions import get_random_string
 
-class config:
+class baseConfig:
     N = 2**20
 
-    BALL_SIZE = 16
+class config(baseConfig):
+    N = 2**20
+
+    KEY_SIZE = 11
+    BALL_DATA_SIZE = 4
+    # the balls structure:  DATA || STATUS || KEY
+    BALL_SIZE = BALL_DATA_SIZE + 1 + KEY_SIZE
     LOG_LAMBDA = 9
     MU = 30*LOG_LAMBDA**3
     NUMBER_OF_BINS = math.ceil(N/MU)
@@ -34,7 +40,6 @@ class config:
     CUCKOO_HASH_KEY_1 = b'Cuckoo hash key1'
     CUCKOO_HASH_KEY_2 = b'Cuckoo hash key2'
     
-    # the balls structure:  DATA || STATUS || KEY
     BALL_STATUS_POSITION = 4
     DUMMY_STATUS = b'\x00'
     DATA_STATUS = b'\x01'

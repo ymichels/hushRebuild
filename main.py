@@ -1,6 +1,7 @@
 
 import random
 from ORAM import ORAM
+from PathORAM.path_ORAM import PathORAM
 from RAM.ram import RAM
 from config import config
 
@@ -8,6 +9,12 @@ from config import config
 
 
 #TODO read/write test
+if True:
+    path_oram = PathORAM(2**20)
+    path_oram.allocate_memory()
+
+
+
 
 #Final test
 if False:
@@ -32,7 +39,7 @@ if False:
     
     
 #Debug test
-if True:
+if False:
     oram_size = 2**5*config.MU
     oram = ORAM(oram_size)
     oram.cleanWriteMemory()

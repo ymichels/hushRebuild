@@ -1,4 +1,4 @@
-from config import config
+from config import baseConfig
 import os
 from pathlib import Path
 class RAM:
@@ -7,7 +7,7 @@ class RAM:
     RT_READ = 0
     RT_WRITE = 0
     
-    def __init__(self, file_path, conf:config) -> None:
+    def __init__(self, file_path, conf:baseConfig) -> None:
         self.conf = conf
         self.file_path = file_path
         output_file = Path(file_path)
