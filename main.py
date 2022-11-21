@@ -4,14 +4,33 @@ from ORAM import ORAM
 from PathORAM.path_ORAM import PathORAM
 from RAM.ram import RAM
 from config import config
+from utils.helper_functions import get_random_string
 
 #https://github.com/ymichels/hushRebuild
 
 
 #TODO read/write test
 if True:
-    path_oram = PathORAM(2**20)
+    real_ram = {}
+    path_oram = PathORAM(2**4)
     path_oram.allocate_memory()
+    path_oram.access('write',0,b'1234')
+    a = path_oram.access('read', 0)
+    path_oram.access('write',0,b'1235')
+    a = path_oram.access('read', 0)
+    print(a)
+    # for i in range(2**4):
+    #     data = get_random_string(path_oram.conf.BALL_DATA_SIZE)
+    #     real_ram[i] = data
+    #     path_oram.access('write',i,data)
+    #     if i % 1_000 == 0:
+    #         print(i,': ',len(path_oram.local_stash))
+    
+    # for i in range(2**20):
+    #     key = random.randint(0,2**4 - 1)
+    #     oram_ans = path_oram.access('read', key)
+    #     if oram_ans != real_ram[key]:
+    #         raise 'ERROR!'
 
 
 

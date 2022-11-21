@@ -8,9 +8,10 @@ import random
 
 class CruchORAM:
     def __init__(self, number_of_blocks) -> None:
+        self.number_of_blocks = number_of_blocks
         self.dic = {}
 
-    def access(self, op, key, data):
-        if op == 'write':
-            self.dic[key] = data
-        return self.dic[key]
+    def position_map_access(self, key):
+        res = random.randint(0,self.number_of_blocks*2-1) if key not in self.dic else self.dic[key]
+        self.dic[key] = random.randint(0,self.number_of_blocks*2-1)
+        return res
