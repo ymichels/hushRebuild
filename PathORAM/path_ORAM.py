@@ -4,23 +4,28 @@ from PathORAM.cruch_oram import CruchORAM
 from RAM.ram import RAM
 from hashTable import HashTable
 from utils.cuckoo_hash import CuckooHash
-from utils.helper_functions import get_random_string
+from utils.helper_functions import flatten, get_random_string
 import random
 
 class PathORAM:
 
-    def __init__(self, number_of_blocks) -> None:
+    def __init__(self, number_of_blocks, allocate=False, is_map=False) -> None:
         self.number_of_blocks = 2**math.ceil(math.log(number_of_blocks,2))
-        self.conf = config(number_of_blocks)
+        self.conf = config(number_of_blocks, is_map)
         self.ram = RAM('path_oram_data/{}.txt'.format(math.log(number_of_blocks,2)), self.conf)
         self.local_stash = []
         self.dummy = b'\x00'*self.conf.BALL_SIZE
         # to change
-        self.position_map = CruchORAM(int(number_of_blocks/2))
+        if (self.conf.N/self.conf.X)*self.conf.BALL_SIZE  < self.conf.LOCAL_MEMORY_SIZE:
+            self.position_map = CruchORAM(int(number_of_blocks/self.conf.X))
+        else:
+            self.position_map = PathORAM(int(number_of_blocks/self.conf.X), allocate, True)
+        if allocate:
+            self.allocate_memory()
     
     def allocate_memory(self):
         current_write = 0
-        empty_memory = [b'\x00'*self.conf.BALL_SIZE]*self.conf.LOCAL_MEMORY_SIZE_IN_BALLS
+        empty_memory = [self.dummy]*self.conf.LOCAL_MEMORY_SIZE_IN_BALLS
         while current_write < self.conf.DATA_SIZE:
             self.ram.writeChunks(
                 [(current_write, current_write + self.conf.LOCAL_MEMORY_SIZE)], empty_memory)
@@ -31,7 +36,6 @@ class PathORAM:
         chunks = self.generate_path_chunks(old_leaf)
         result = None
         path = self.ram.readChunks(chunks)
-        levels = int(len(path)/self.conf.Z)
         self.local_stash.extend(filter(lambda a: a != self.dummy, path))
         for i, ball in enumerate(self.local_stash):
             if ball != self.dummy and self.check_key(ball, key):
@@ -40,10 +44,11 @@ class PathORAM:
                 if op == 'write':
                     ball = self.change_ball_data(ball, data)
                 self.local_stash[i] = ball
+                break
         if op == 'write' and result == None:
             self.local_stash.append(self.create_ball(key, data, new_leaf))
         write_back = []
-        for i in range(levels):
+        for i in range(self.conf.NUMBER_OF_LEVELS):
             bucket = []
             for ball in self.local_stash:
                 if int(self.get_leaf(ball)/(2**i)) == int(old_leaf/(2**i)):
@@ -56,13 +61,62 @@ class PathORAM:
         self.ram.writeChunks(chunks, write_back)
         return result
 
+    def position_map_access(self, upper_level_key):
+        key = int(upper_level_key/self.X)
+        old_leaf, new_leaf = self.position_map.position_map_access(key)
+        chunks = self.generate_path_chunks(old_leaf)
+        upper_old_leaf = None
+        upper_new_leaf = None
+        path = self.ram.readChunks(chunks)
+        for i, ball in enumerate(self.local_stash):
+            if ball != self.dummy and self.check_key(ball, key):
+                ball = self.set_leaf(ball, new_leaf)
+                upper_old_leaf = self.get_upper_leaf(ball, upper_level_key)
+                upper_new_leaf = self.generate_random_upper_leaf()
+                ball = self.set_upper_leaf(ball, upper_new_leaf, upper_level_key)
+                self.local_stash[i] = ball
+        
+        if upper_old_leaf == None:
+            upper_old_leaf = self.generate_random_upper_leaf()
+            upper_new_leaf, ball = self.create_random_map_ball(key, new_leaf)
+            self.local_stash.append(ball)
+
+        write_back = []
+        for i in range(self.conf.NUMBER_OF_LEVELS):
+            bucket = []
+            for ball in self.local_stash:
+                if int(self.get_leaf(ball)/(2**i)) == int(old_leaf/(2**i)):
+                    bucket.append(ball)
+                    self.local_stash.remove(ball)
+                    if len(bucket) == self.conf.Z:
+                        break
+            write_back.extend(self.complete_bucket(bucket))
+        self.ram.writeChunks(chunks, write_back)
+        return upper_old_leaf, upper_new_leaf
+    
+    def set_upper_leaf(self, ball, upper_leaf, upper_level_key):
+        index = upper_level_key % self.conf.X
+        return ball[:2*self.conf.KEY_SIZE + index*self.conf.UPPER_LAYER_KEY_SIZE] + upper_leaf.to_bytes(self.conf.UPPER_LAYER_KEY_SIZE, 'big') + ball[2*self.conf.KEY_SIZE + (index+1)*self.conf.UPPER_LAYER_KEY_SIZE:]
+
+    def generate_random_upper_leaf(self):
+        return random.randint(0,self.number_of_blocks*self.conf.X-1)
+    
+    def get_upper_leaf(self, ball, upper_level_key):
+        data = self.get_ball_data(ball)
+        index = upper_level_key % self.conf.X
+        return data[index*self.conf.UPPER_LAYER_KEY_SIZE: (index +1)*self.conf.UPPER_LAYER_KEY_SIZE]
+
+    def create_random_map_ball(self, key, leaf, upper_level_key):
+        data = [self.generate_random_upper_leaf() for i in range(self.conf.X)]
+        ball = self.create_ball(key, data, leaf)
+        return self.get_upper_leaf(ball, upper_level_key), ball
+
     def create_ball(self, key, data, leaf):
-        ball = key.to_bytes(self.conf.KEY_SIZE, 'big') + b'\x00'*(self.conf.KEY_SIZE + self.conf.DATA_SIZE)
+        ball = key.to_bytes(self.conf.KEY_SIZE, 'big') + b'\x00'*(self.conf.KEY_SIZE + self.conf.DATA_SIZE) #preformance
         ball = self.set_leaf(ball, leaf)
         ball = self.change_ball_data(ball, data)
         return ball
-
-    
+  
     def get_ball_data(self, ball):
         return ball[self.conf.KEY_SIZE*2:]
 
@@ -97,8 +151,7 @@ class PathORAM:
         return chunks
 
 
-    def position_map_access(self, key):
-        raise 'not implemented'
+    
     
 
 
