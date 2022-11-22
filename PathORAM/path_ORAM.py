@@ -27,26 +27,26 @@ class PathORAM:
             current_write += self.conf.LOCAL_MEMORY_SIZE
     
     def access(self, op, key, data = None):
-        leaf = self.position_map.position_map_access(key)
-        chunks = self.generate_path_chunks(leaf)
+        old_leaf, new_leaf = self.position_map.position_map_access(key)
+        chunks = self.generate_path_chunks(old_leaf)
         result = None
         path = self.ram.readChunks(chunks)
-        for i, ball in enumerate(path):
+        levels = int(len(path)/self.conf.Z)
+        self.local_stash.extend(filter(lambda a: a != self.dummy, path))
+        for i, ball in enumerate(self.local_stash):
             if ball != self.dummy and self.check_key(ball, key):
-                ball = self.set_random_leaf(ball)
+                ball = self.set_leaf(ball, new_leaf)
                 result = self.get_ball_data(ball)
                 if op == 'write':
                     ball = self.change_ball_data(ball, data)
-                path[i] = ball
+                self.local_stash[i] = ball
         if op == 'write' and result == None:
-            self.local_stash.append(self.create_ball(key, data))
-        levels = int(len(path)/self.conf.Z)
-        self.local_stash.extend(filter(lambda a: a != self.dummy, path))
+            self.local_stash.append(self.create_ball(key, data, new_leaf))
         write_back = []
         for i in range(levels):
             bucket = []
             for ball in self.local_stash:
-                if int(self.get_leaf(ball)/(2**i)) == int(leaf/(2**i)):
+                if int(self.get_leaf(ball)/(2**i)) == int(old_leaf/(2**i)):
                     bucket.append(ball)
                     self.local_stash.remove(ball)
                     if len(bucket) == self.conf.Z:
@@ -56,9 +56,9 @@ class PathORAM:
         self.ram.writeChunks(chunks, write_back)
         return result
 
-    def create_ball(self, key, data):
+    def create_ball(self, key, data, leaf):
         ball = key.to_bytes(self.conf.KEY_SIZE, 'big') + b'\x00'*(self.conf.KEY_SIZE + self.conf.DATA_SIZE)
-        ball = self.set_random_leaf(ball)
+        ball = self.set_leaf(ball, leaf)
         ball = self.change_ball_data(ball, data)
         return ball
 
@@ -75,8 +75,8 @@ class PathORAM:
     def change_ball_data(self, ball, data):
         return ball[:self.conf.KEY_SIZE*2] + data
     
-    def set_random_leaf(self, ball):
-        return ball[:self.conf.KEY_SIZE] + random.randint(0, self.conf.N-1).to_bytes(self.conf.KEY_SIZE, 'big') + ball[self.conf.KEY_SIZE*2:]
+    def set_leaf(self, ball, leaf):
+        return ball[:self.conf.KEY_SIZE] + leaf.to_bytes(self.conf.KEY_SIZE, 'big') + ball[self.conf.KEY_SIZE*2:]
     
     def bytes_to_int(self, _bytes):
         return int.from_bytes(_bytes, 'big', signed=False)

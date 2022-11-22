@@ -12,6 +12,6 @@ class CruchORAM:
         self.dic = {}
 
     def position_map_access(self, key):
-        res = random.randint(0,self.number_of_blocks*2-1) if key not in self.dic else self.dic[key]
+        old_leaf = random.randint(0,self.number_of_blocks*2-1) if key not in self.dic else self.dic[key]
         self.dic[key] = random.randint(0,self.number_of_blocks*2-1)
-        return res
+        return old_leaf, self.dic[key]
