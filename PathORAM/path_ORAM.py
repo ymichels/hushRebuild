@@ -62,7 +62,7 @@ class PathORAM:
         return result
 
     def position_map_access(self, upper_level_key):
-        key = int(upper_level_key/self.X)
+        key = int(upper_level_key/self.conf.X)
         old_leaf, new_leaf = self.position_map.position_map_access(key)
         chunks = self.generate_path_chunks(old_leaf)
         upper_old_leaf = None
@@ -78,7 +78,7 @@ class PathORAM:
         
         if upper_old_leaf == None:
             upper_old_leaf = self.generate_random_upper_leaf()
-            upper_new_leaf, ball = self.create_random_map_ball(key, new_leaf)
+            upper_new_leaf, ball = self.create_random_map_ball(key, new_leaf, upper_level_key)
             self.local_stash.append(ball)
 
         write_back = []
@@ -104,10 +104,12 @@ class PathORAM:
     def get_upper_leaf(self, ball, upper_level_key):
         data = self.get_ball_data(ball)
         index = upper_level_key % self.conf.X
-        return data[index*self.conf.UPPER_LAYER_KEY_SIZE: (index +1)*self.conf.UPPER_LAYER_KEY_SIZE]
+        return self.bytes_to_int(data[index*self.conf.UPPER_LAYER_KEY_SIZE: (index +1)*self.conf.UPPER_LAYER_KEY_SIZE])
 
     def create_random_map_ball(self, key, leaf, upper_level_key):
-        data = [self.generate_random_upper_leaf() for i in range(self.conf.X)]
+        ###########################################
+        data = [self.generate_random_upper_leaf().to_bytes(self.conf.UPPER_LAYER_KEY_SIZE, 'big') for _ in range(self.conf.X)]
+        data = b''.join(data)
         ball = self.create_ball(key, data, leaf)
         return self.get_upper_leaf(ball, upper_level_key), ball
 

@@ -10,7 +10,6 @@ from utils.helper_functions import get_random_string
 
 
 #TODO read/write test
-err = [4095, 2419, 15]
 if True:
     real_ram = {}
     S = 12
@@ -20,7 +19,7 @@ if True:
         data = get_random_string(path_oram.conf.BALL_DATA_SIZE)
         real_ram[i] = data
         path_oram.access('write',i,data)
-        if i % 1_000 == 0:
+        if i % 1_00 == 0:
             print(i,': ',len(path_oram.local_stash))
     
     for i in range(2**(S+1)):
