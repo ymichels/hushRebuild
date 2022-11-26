@@ -13,8 +13,8 @@ from utils.helper_functions import get_random_string
 if True:
     real_ram = {}
     S = 12
-    path_oram = PathORAM(2**S)
-    path_oram.allocate_memory()
+    path_oram = PathORAM(2**S,True)
+    # path_oram.allocate_memory()
     for i in range(2**S):
         data = get_random_string(path_oram.conf.BALL_DATA_SIZE)
         real_ram[i] = data
@@ -24,7 +24,8 @@ if True:
     
     for i in range(2**(S+1)):
         key = random.randint(0,2**S - 1)
-        oram_ans = path_oram.access('read', i)
+        if i < 2**S:
+            oram_ans = path_oram.access('read', i)
         oram_ans = path_oram.access('read', key)
         if oram_ans != real_ram[key]:
             raise 'ERROR!'

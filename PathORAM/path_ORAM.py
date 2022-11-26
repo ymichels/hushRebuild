@@ -28,7 +28,7 @@ class PathORAM:
         empty_memory = [self.dummy]*self.conf.LOCAL_MEMORY_SIZE_IN_BALLS
         while current_write < self.conf.DATA_SIZE:
             self.ram.writeChunks(
-                [(current_write, current_write + self.conf.LOCAL_MEMORY_SIZE)], empty_memory)
+                [(current_write, current_write + self.conf.LOCAL_MEMORY_SIZE_IN_BALLS*self.conf.BALL_SIZE)], empty_memory)
             current_write += self.conf.LOCAL_MEMORY_SIZE
     
     def access(self, op, key, data = None):
@@ -68,6 +68,7 @@ class PathORAM:
         upper_old_leaf = None
         upper_new_leaf = None
         path = self.ram.readChunks(chunks)
+        self.local_stash.extend(filter(lambda a: a != self.dummy, path))
         for i, ball in enumerate(self.local_stash):
             if ball != self.dummy and self.check_key(ball, key):
                 ball = self.set_leaf(ball, new_leaf)
