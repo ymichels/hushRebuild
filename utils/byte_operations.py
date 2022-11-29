@@ -8,7 +8,7 @@ class ByteOperations:
     def __init__(self,key, conf:config) -> None:
         self.conf = conf
         self.key_length = len(key)
-        self.cipher = AES.new(key, AES.MODE_ECB)
+        self.cipher = AES.new(key, AES.MODE_ECB, use_aesni=True)
         self.empty_value = b'\x00'*conf.BALL_STATUS_POSITION
 
     

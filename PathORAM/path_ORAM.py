@@ -124,7 +124,8 @@ class PathORAM:
         return ball[self.conf.KEY_SIZE*2:]
 
     def complete_bucket(self, bucket):
-        return bucket + [self.dummy]*(self.conf.Z - len(bucket))
+        bucket.extend([self.dummy]*(self.conf.Z - len(bucket)))
+        return bucket
 
     def get_leaf(self, ball):
         return self.bytes_to_int(ball[self.conf.KEY_SIZE:2*self.conf.KEY_SIZE])

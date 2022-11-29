@@ -84,6 +84,7 @@ class ORAM:
             self.rebuild()
             self.local_stash = {}
             self.stash_reals_count = 0
+        return ball
     
     def rebuild(self):
         

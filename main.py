@@ -9,8 +9,7 @@ from utils.helper_functions import get_random_string
 #https://github.com/ymichels/hushRebuild
 
 
-#TODO read/write test
-if True:
+if False:
     real_ram = {}
     S = 12
     path_oram = PathORAM(2**S,True)
@@ -61,7 +60,7 @@ if False:
     
     
 #Debug test
-if False:
+def debug_test():
     oram_size = 2**5*config.MU
     oram = ORAM(oram_size)
     oram.cleanWriteMemory()
@@ -72,8 +71,10 @@ if False:
     for i in range(oram_size + 50_000):
         ball_to_read = data_ram.readBall(random.randint(0,oram_size-1)*oram.conf.BALL_SIZE)
         key = ball_to_read[1 + oram.conf.BALL_STATUS_POSITION:]
-        oram.access('read',key)
+        read_ball = oram.access('read',key)
         j+=1
+        if read_ball != ball_to_read:
+            print("INACCUARE DATA!!!")
         if o != oram.not_found:
             o= oram.not_found
             j=0
@@ -86,3 +87,16 @@ if False:
     print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
     print('RAM.BALL_READ: ', RAM.BALL_READ)
     print('done!')
+
+
+
+import cProfile
+import pstats
+
+with cProfile.Profile() as pr:
+    debug_test()
+
+stats = pstats.Stats(pr)
+stats.sort_stats(pstats.SortKey.TIME)
+stats.print_stats()
+stats.dump_stats(filename='debug_test_final_v2.prof')

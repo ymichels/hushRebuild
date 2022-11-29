@@ -20,8 +20,10 @@ class ObliviousSort:
                 bin_one.append(ball)
             else:
                 bin_zero.append(ball)
-        bin_one = bin_one + [self.dummy] * (self.conf.BIN_SIZE - len(bin_one))
-        bin_zero = bin_zero + [self.dummy] * (self.conf.BIN_SIZE - len(bin_zero))
+        # bin_one = bin_one + [self.dummy] * (self.conf.BIN_SIZE - len(bin_one))
+        # bin_zero = bin_zero + [self.dummy] * (self.conf.BIN_SIZE - len(bin_zero))
+        bin_one.extend([self.dummy] * (self.conf.BIN_SIZE - len(bin_one)))
+        bin_zero.extend([self.dummy] * (self.conf.BIN_SIZE - len(bin_zero)))
         return bin_zero, bin_one
         
 
