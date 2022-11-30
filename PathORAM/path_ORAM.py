@@ -48,12 +48,14 @@ class PathORAM:
         if op == 'write' and result == None:
             self.local_stash.append(self.create_ball(key, data, new_leaf))
         write_back = []
+        local_stash_and_leafs = [(self.get_leaf(ball), ball) for ball in self.local_stash]
         for i in range(self.conf.NUMBER_OF_LEVELS):
             bucket = []
-            for ball in self.local_stash:
-                if int(self.get_leaf(ball)/(2**i)) == int(old_leaf/(2**i)):
+            for leaf,ball in local_stash_and_leafs:
+                if int(leaf/(2**i)) == int(old_leaf/(2**i)):
                     bucket.append(ball)
                     self.local_stash.remove(ball)
+                    local_stash_and_leafs.remove((leaf, ball))
                     if len(bucket) == self.conf.Z:
                         break
             write_back.extend(self.complete_bucket(bucket))
@@ -83,12 +85,14 @@ class PathORAM:
             self.local_stash.append(ball)
 
         write_back = []
+        local_stash_and_leafs = [(self.get_leaf(ball), ball) for ball in self.local_stash]
         for i in range(self.conf.NUMBER_OF_LEVELS):
             bucket = []
-            for ball in self.local_stash:
-                if int(self.get_leaf(ball)/(2**i)) == int(old_leaf/(2**i)):
+            for leaf, ball in local_stash_and_leafs:
+                if int(leaf/(2**i)) == int(old_leaf/(2**i)):
                     bucket.append(ball)
                     self.local_stash.remove(ball)
+                    local_stash_and_leafs.remove((leaf, ball))
                     if len(bucket) == self.conf.Z:
                         break
             write_back.extend(self.complete_bucket(bucket))
@@ -109,15 +113,13 @@ class PathORAM:
 
     def create_random_map_ball(self, key, leaf, upper_level_key):
         ###########################################
-        data = [self.generate_random_upper_leaf().to_bytes(self.conf.UPPER_LAYER_KEY_SIZE, 'big') for _ in range(self.conf.X)]
+        data = [self.generate_random_upper_leaf().to_bytes(self.conf.UPPER_LAYER_KEY_SIZE, 'big') for _ in range(self.conf.X*2)]
         data = b''.join(data)
         ball = self.create_ball(key, data, leaf)
         return self.get_upper_leaf(ball, upper_level_key), ball
 
     def create_ball(self, key, data, leaf):
-        ball = key.to_bytes(self.conf.KEY_SIZE, 'big') + b'\x00'*(self.conf.KEY_SIZE + self.conf.DATA_SIZE) #preformance
-        ball = self.set_leaf(ball, leaf)
-        ball = self.change_ball_data(ball, data)
+        ball = key.to_bytes(self.conf.KEY_SIZE, 'big') + leaf.to_bytes(self.conf.KEY_SIZE, 'big')+ data #preformance
         return ball
   
     def get_ball_data(self, ball):

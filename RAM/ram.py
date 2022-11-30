@@ -1,3 +1,4 @@
+import math
 from config import baseConfig
 import os
 from pathlib import Path
@@ -52,6 +53,9 @@ class RAM:
         if int((RAM.BALL_WRITE - balls_num) / 1_000_000) != int(RAM.BALL_WRITE / 1_000_000):
             print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
         self.file.seek(start)
+        to_write = b''.join(balls)
+        if len(to_write) != len(balls)*self.conf.BALL_SIZE:
+            raise 'here!!!'
         self.file.write(b''.join(balls))
         # return [chunk_bytes[i*self.conf.BALL_SIZE:(i+1)*self.conf.BALL_SIZE] for i in range(balls_num)]
         
@@ -63,13 +67,13 @@ class RAM:
         balls = []
         for chunk in chunks:
             chunk_balls = self.readChunk(chunk)
-            chunk_balls.append(b'')
-            chunk_balls = chunk_balls[:chunk_balls.index(b'')]
             balls.extend(chunk_balls)
+            # read_balls = []
             # start, end = chunk
             # while start < end:
-            #     balls.append(self.readBall(start))
+            #     read_balls.append(self.readBall(start))
             #     start += self.conf.BALL_SIZE
+            # balls.extend(read_balls)
         return balls
 
     def writeChunks(self, chunks, balls):
@@ -79,13 +83,13 @@ class RAM:
         i = 0
         for chunk in chunks:
             start, end = chunk
-            balls_num = int((end-start)/self.conf.BALL_SIZE)
+            balls_num = math.ceil((end-start)/self.conf.BALL_SIZE)
             self.writeChunk(chunk, balls[i:i+balls_num])
+            i += balls_num
             # while start < end:
             #     self.writeBall(start, balls[i])
             #     start += self.conf.BALL_SIZE
             #     i += 1
-            i += balls_num
         return balls
 
     def readBalls(self, locations):

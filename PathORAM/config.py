@@ -23,7 +23,7 @@ class config(baseConfig):
             self.BALL_SIZE = 2*self.KEY_SIZE + self.BALL_DATA_SIZE
             # raise "not implemented yet"
         
-        self.LOCAL_MEMORY_SIZE = 400#2*30*(9**3)*16
+        self.LOCAL_MEMORY_SIZE = 2*30*(9**3)*16
         self.LOCAL_MEMORY_SIZE_IN_BALLS = int(self.LOCAL_MEMORY_SIZE/self.BALL_SIZE)
         self.DATA_SIZE = N*self.BALL_SIZE*2*self.Z
         self.BUCKET_SIZE = self.Z*self.BALL_SIZE
