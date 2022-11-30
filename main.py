@@ -10,6 +10,13 @@ from utils.helper_functions import get_random_string
 
 
 def path_ORAM_test():
+
+    # Results for this:
+    # RAM.BALL_WRITE:  813000000
+    # RAM.RT_WRITE:  10486081
+    # RAM.RT_READ:  10485760
+    # RAM.BALL_WRITE:  813189040
+    # RAM.BALL_READ:  796917760
     real_ram = {}
     S = 20
     path_oram = PathORAM(2**S,True)
@@ -115,5 +122,5 @@ with cProfile.Profile() as pr:
 
 stats = pstats.Stats(pr)
 stats.sort_stats(pstats.SortKey.TIME)
-stats.print_stats()
+# stats.print_stats()
 stats.dump_stats(filename='path_ORAM_test_v4.prof')
