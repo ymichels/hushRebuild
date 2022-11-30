@@ -27,11 +27,6 @@ def path_ORAM_test():
         if i % 1_000 == 0:
             print(i,': ',len(path_oram.local_stash))
 
-    # print('RAM.RT_WRITE: ', RAM.RT_WRITE)
-    # print('RAM.RT_READ: ', RAM.RT_READ)
-    # print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
-    # print('RAM.BALL_READ: ', RAM.BALL_READ)
-    # print('done!')
     for i in range(2**(S)):
         if i % 1_000 == 0:
             print(i,': ',len(path_oram.local_stash))
@@ -43,6 +38,12 @@ def path_ORAM_test():
             oram_ans = path_oram.access('read', key)
             oram_ans = path_oram.access('read', key)
             raise 'ERROR!'
+    
+    print('RAM.RT_WRITE: ', RAM.RT_WRITE)
+    print('RAM.RT_READ: ', RAM.RT_READ)
+    print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
+    print('RAM.BALL_READ: ', RAM.BALL_READ)
+    print('done!')
     # for i in range(0, 2**S):
     #     key = random.randint(0,2**(S-2) - 1)
     #     oram_ans = path_oram.access('read', key)
