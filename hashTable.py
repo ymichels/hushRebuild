@@ -352,6 +352,9 @@ class HashTable:
         replacement_ball = self.createDummies(1)[0]
         
         # table 1
+        #TODO: read from both tables at once
+        RAM.RT_READ += 2
+        RAM.RT_WRITE += 2
         ball = self.overflow_ram.readBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location) 
         if ball[self.conf.BALL_STATUS_POSITION+1:] == key:
             result_ball = ball
