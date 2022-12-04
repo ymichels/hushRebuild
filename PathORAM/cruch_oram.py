@@ -1,6 +1,6 @@
 import math
 from PathORAM.config import config
-from RAM.ram import RAM
+from RAM.file_RAM import file_RAM
 from hashTable import HashTable
 from utils.cuckoo_hash import CuckooHash
 from utils.helper_functions import get_random_string

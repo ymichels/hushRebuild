@@ -8,8 +8,12 @@ class baseConfig:
 class config(baseConfig):
     N = 2**20
 
-    KEY_SIZE = 11
-    BALL_DATA_SIZE = 4
+    
+    KEY_SIZE = 16
+
+    #NOTE: because constructCapacityThresholdBall and deconstructCapacityThresholdBall are not well implemented, 
+    # this must be an even number. to be corrected in a future version
+    BALL_DATA_SIZE = 6
     # the balls structure:  DATA || STATUS || KEY
     BALL_SIZE = BALL_DATA_SIZE + 1 + KEY_SIZE
     LOG_LAMBDA = 9

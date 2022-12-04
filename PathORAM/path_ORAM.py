@@ -1,7 +1,7 @@
 import math
 from PathORAM.config import config
 from PathORAM.cruch_oram import CruchORAM
-from RAM.ram import RAM
+from RAM.local_RAM import local_RAM
 from hashTable import HashTable
 from utils.cuckoo_hash import CuckooHash
 from utils.helper_functions import flatten, get_random_string
@@ -12,7 +12,7 @@ class PathORAM:
     def __init__(self, number_of_blocks, allocate=False, is_map=False) -> None:
         self.number_of_blocks = 2**math.ceil(math.log(number_of_blocks,2))
         self.conf = config(number_of_blocks, is_map)
-        self.ram = RAM('path_oram_data/{}.txt'.format(math.log(number_of_blocks,2)), self.conf)
+        self.ram = local_RAM('path_oram_data/{}.txt'.format(math.log(number_of_blocks,2)), self.conf)
         self.local_stash = []
         self.dummy = b'\x00'*self.conf.BALL_SIZE
         # to change

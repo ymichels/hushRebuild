@@ -1,5 +1,5 @@
 import math
-from RAM.ram import RAM
+from RAM.local_RAM import local_RAM
 from collections import defaultdict
 from utils.byte_operations import ByteOperations
 from thresholdGenerator import ThresholdGenerator
@@ -16,13 +16,13 @@ class HashTable:
         self.is_built = False
         self.conf = conf
         self.byte_operations = ByteOperations(conf.MAIN_KEY,conf)
-        self.data_ram = RAM(conf.DATA_LOCATION, conf)
-        self.bins_ram = RAM(conf.BINS_LOCATION, conf)
-        self.overflow_ram = RAM(conf.OVERFLOW_LOCATION, conf)
-        self.second_overflow_ram = RAM(conf.OVERFLOW_SECOND_LOCATION, conf)
+        self.data_ram = local_RAM(conf.DATA_LOCATION, conf)
+        self.bins_ram = local_RAM(conf.BINS_LOCATION, conf)
+        self.overflow_ram = local_RAM(conf.OVERFLOW_LOCATION, conf)
+        self.second_overflow_ram = local_RAM(conf.OVERFLOW_SECOND_LOCATION, conf)
         self.threshold_generator = ThresholdGenerator(conf)
         self.local_stash = {}
-        self.mixed_stripe_ram = RAM(conf.MIXED_STRIPE_LOCATION, conf)
+        self.mixed_stripe_ram = local_RAM(conf.MIXED_STRIPE_LOCATION, conf)
         self.cuckoo = CuckooHash(conf)
         self.dummy = conf.DUMMY_STATUS*conf.BALL_SIZE
         self.dummy_bin = self.createDummies(conf.BIN_SIZE)
@@ -353,8 +353,8 @@ class HashTable:
         
         # table 1
         #TODO: read from both tables at once
-        RAM.RT_READ += 2
-        RAM.RT_WRITE += 2
+        local_RAM.RT_READ += 2
+        local_RAM.RT_WRITE += 2
         ball = self.overflow_ram.readBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location) 
         if ball[self.conf.BALL_STATUS_POSITION+1:] == key:
             result_ball = ball
@@ -400,7 +400,7 @@ class HashTable:
         return result_ball
 
     # this function copies the previous layer into the current layer for intersperse
-    def copyToEndOfBins(self, second_data_ram:RAM, reals):
+    def copyToEndOfBins(self, second_data_ram:local_RAM, reals):
         current_read_pos = 0
         self.reals_count += reals
         while current_read_pos < self.conf.DATA_SIZE:

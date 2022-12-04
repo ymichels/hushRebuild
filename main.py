@@ -2,7 +2,8 @@
 import random
 from ORAM import ORAM
 from PathORAM.path_ORAM import PathORAM
-from RAM.ram import RAM
+from RAM.local_RAM import local_RAM
+from RAM.file_RAM import file_RAM
 from config import config
 from utils.helper_functions import get_random_string
 
@@ -12,7 +13,6 @@ from utils.helper_functions import get_random_string
 def path_ORAM_test():
 
     # Results for this:
-    # RAM.BALL_WRITE:  813000000
     # RAM.RT_WRITE:  10486081
     # RAM.RT_READ:  10485760
     # RAM.BALL_WRITE:  813189040
@@ -46,10 +46,10 @@ def path_ORAM_test():
             oram_ans = path_oram.access('read', key)
             raise 'ERROR!'
     
-    print('RAM.RT_WRITE: ', RAM.RT_WRITE)
-    print('RAM.RT_READ: ', RAM.RT_READ)
-    print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
-    print('RAM.BALL_READ: ', RAM.BALL_READ)
+    print('RAM.RT_WRITE: ', local_RAM.RT_WRITE)
+    print('RAM.RT_READ: ', local_RAM.RT_READ)
+    print('RAM.BALL_WRITE: ', local_RAM.BALL_WRITE)
+    print('RAM.BALL_READ: ', local_RAM.BALL_READ)
     print('done!')
     # for i in range(0, 2**S):
     #     key = random.randint(0,2**(S-2) - 1)
@@ -66,7 +66,7 @@ if False:
     oram = ORAM(oram_size)
     oram.cleanWriteMemory()
     oram.initial_build('testing_data.txt')
-    data_ram = RAM('testing_data.txt', oram.conf)
+    data_ram = file_RAM('testing_data.txt', oram.conf)
     for i in range(oram_size + 50_000):
         ball_to_read = data_ram.readBall(random.randint(0,oram_size-1)*oram.conf.BALL_SIZE)
         key = ball_to_read[1 + oram.conf.BALL_STATUS_POSITION:]
@@ -74,25 +74,30 @@ if False:
         if i % 10_000 == 0:
             print('accesses: ',i)
         
-    print('RAM.RT_WRITE: ', RAM.RT_WRITE)
-    print('RAM.RT_READ: ', RAM.RT_READ)
-    print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
-    print('RAM.BALL_READ: ', RAM.BALL_READ)
+    print('RAM.RT_WRITE: ', file_RAM.RT_WRITE)
+    print('RAM.RT_READ: ', file_RAM.RT_READ)
+    print('RAM.BALL_WRITE: ', file_RAM.BALL_WRITE)
+    print('RAM.BALL_READ: ', file_RAM.BALL_READ)
     print('done!')
     
     
     
 #Debug test
 def debug_test():
-    oram_size = 2**5*config.MU
+    # Results for this:
+    # RAM.RT_WRITE:  5057017
+    # RAM.RT_READ:  5056827
+    # RAM.BALL_WRITE:  87572960
+    # RAM.BALL_READ:  79399793
+    oram_size = 2**3*config.MU
     oram = ORAM(oram_size)
     oram.cleanWriteMemory()
     oram.initial_build('testing_data.txt')
-    data_ram = RAM('testing_data.txt', oram.conf)
+    # data_ram = local_RAM('testing_data.txt', oram.conf)
     o = 0
     j=0
     for i in range(oram_size + 50_000):
-        ball_to_read = data_ram.readBall(random.randint(0,oram_size-1)*oram.conf.BALL_SIZE)
+        ball_to_read = oram.original_data_ram.readBall(random.randint(0,oram_size-1)*oram.conf.BALL_SIZE)
         key = ball_to_read[1 + oram.conf.BALL_STATUS_POSITION:]
         read_ball = oram.access('read',key)
         j+=1
@@ -105,22 +110,22 @@ def debug_test():
             print('accesses: ',i)
             print('not-found ratio: ', oram.not_found/(i+1))
         
-    print('RAM.RT_WRITE: ', RAM.RT_WRITE)
-    print('RAM.RT_READ: ', RAM.RT_READ)
-    print('RAM.BALL_WRITE: ', RAM.BALL_WRITE)
-    print('RAM.BALL_READ: ', RAM.BALL_READ)
+    print('RAM.RT_WRITE: ', local_RAM.RT_WRITE)
+    print('RAM.RT_READ: ', local_RAM.RT_READ)
+    print('RAM.BALL_WRITE: ', local_RAM.BALL_WRITE)
+    print('RAM.BALL_READ: ', local_RAM.BALL_READ)
     print('done!')
 
 
 
-# path_ORAM_test()
+# debug_test()
 import cProfile
 import pstats
 
 with cProfile.Profile() as pr:
-    path_ORAM_test()
+    debug_test()
 
 stats = pstats.Stats(pr)
 stats.sort_stats(pstats.SortKey.TIME)
 # stats.print_stats()
-stats.dump_stats(filename='path_ORAM_test_v4.prof')
+stats.dump_stats(filename='debug_test_local_RAM.prof')

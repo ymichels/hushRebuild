@@ -1,5 +1,5 @@
 from Cryptodome.Cipher import AES
-from RAM.ram import RAM
+from RAM.local_RAM import local_RAM
 from config import config
 from operator import itemgetter
 
@@ -24,13 +24,13 @@ class ByteOperations:
         
     
     def constructCapacityThresholdBall(self, capacity, threshold):
-        capacity_bytes = capacity.to_bytes(int((self.conf.BALL_SIZE - self.conf.BALL_STATUS_POSITION)/2), 'big')
-        threshold_bytes = threshold.to_bytes(int((self.conf.BALL_SIZE - self.conf.BALL_STATUS_POSITION)/2), 'big')
+        capacity_bytes = capacity.to_bytes(int((self.conf.BALL_SIZE - self.conf.BALL_STATUS_POSITION)/2 + 1), 'big')
+        threshold_bytes = threshold.to_bytes(int((self.conf.BALL_SIZE - self.conf.BALL_STATUS_POSITION)/2 + 1), 'big')
         length = len(capacity_bytes) + len(threshold_bytes)
         return self.conf.DUMMY_STATUS*(self.conf.BALL_SIZE - length) + capacity_bytes + threshold_bytes
     
     def deconstructCapacityThresholdBall(self, ball):
-        length = int((self.conf.BALL_SIZE - self.conf.BALL_STATUS_POSITION)/2)
+        length = int((self.conf.BALL_SIZE - self.conf.BALL_STATUS_POSITION)/2 + 1)
         threshold = int.from_bytes(ball[self.conf.BALL_STATUS_POSITION + length:], 'big', signed=False)
         capacity = int.from_bytes(ball[:self.conf.BALL_SIZE - length], 'big', signed=False)
         return capacity, threshold
@@ -47,19 +47,19 @@ class ByteOperations:
             return int.from_bytes(enc, 'big', signed=False)
         return int.from_bytes(enc, 'big', signed=False) % limit
     
-    def writeTransposed(self, ram: RAM, balls, offset, start):
+    def writeTransposed(self, ram: local_RAM, balls, offset, start):
         chunks = []
         for i in range(len(balls)):
             chunks.append((start + i*offset*self.conf.BALL_SIZE, start + i*offset*self.conf.BALL_SIZE + self.conf.BALL_SIZE))
         ram.writeChunks(chunks, balls)
 
-    def readTransposed(self, ram: RAM, offset, start, readLength):
+    def readTransposed(self, ram: local_RAM, offset, start, readLength):
         chunks = []
         for i in range(readLength):
             chunks.append((start + i*offset*self.conf.BALL_SIZE, start + i*offset*self.conf.BALL_SIZE + self.conf.BALL_SIZE))
         return ram.readChunks(chunks)
     
-    def readTransposedGetMixedStripeIndexes(self, ram: RAM, offset, start, readLength, mixed_start, mixed_end):
+    def readTransposedGetMixedStripeIndexes(self, ram: local_RAM, offset, start, readLength, mixed_start, mixed_end):
         chunks = []
         mixed_indexes = []
         for i in range(readLength):
@@ -69,7 +69,7 @@ class ByteOperations:
         balls = ram.readChunks(chunks)
         return balls, mixed_indexes
 
-    def readTransposedAndShifted(self, ram: RAM, offset, start, readLength, shift_position):
+    def readTransposedAndShifted(self, ram: local_RAM, offset, start, readLength, shift_position):
         chunks = []
         shift = 0
         for i in range(readLength):

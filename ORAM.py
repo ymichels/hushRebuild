@@ -2,7 +2,8 @@
 
 
 import math
-from RAM.ram import RAM
+from RAM.local_RAM import local_RAM
+from RAM.file_RAM import file_RAM
 from config import config
 from hashTable import HashTable
 from utils.cuckoo_hash import CuckooHash
@@ -38,7 +39,9 @@ class ORAM:
     def initial_build(self, data_location) -> None:
         final_table = self.tables[-1]
         temp = final_table.data_ram
-        final_table.data_ram = RAM(data_location, final_table.conf)
+        self.original_data_ram = local_RAM(data_location, final_table.conf)
+        self.original_data_ram.generate_random_memory(final_table.conf.N)
+        final_table.data_ram = self.original_data_ram
         final_table.rebuild(final_table.conf.N)
         final_table.data_ram = temp
         
