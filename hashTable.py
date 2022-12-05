@@ -166,7 +166,7 @@ class HashTable:
             #generate a threshold
             threshold = self.threshold_generator.generate()
             while threshold >= capacity:
-                raise Exception("Error, threshold is greator than capacity")
+                raise Exception("Error, threshold is greater than capacity")
                 
             #Add only the balls above the threshold
             write_balls.extend(bin_top[- (capacity - threshold):])
@@ -353,23 +353,30 @@ class HashTable:
         
         # read
         ball_1,ball_2 = self.overflow_ram.readBalls([self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location,self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location)]) 
-
+        ball_1_write = ''
+        ball_2_write = ''
         # table 1
         if ball_1[self.conf.BALL_STATUS_POSITION+1:] == key:
             result_ball = ball_1
-            self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, replacement_ball)
+            ball_1_write = replacement_ball
+            # self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, replacement_ball)
             self.reals_count -= 1
         else:
-            self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, ball_1)
+            ball_1_write = ball_1
+            # self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, ball_1)
         
         # table 2
         if ball_2[self.conf.BALL_STATUS_POSITION+1:] == key:
             result_ball = ball_2
-            self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), replacement_ball)
+            ball_2_write = replacement_ball
+            # self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), replacement_ball)
             self.reals_count -= 1
         else:
-            self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), ball_2)
+            ball_2_write = ball_2
+            # self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), ball_2)
         
+        self.overflow_ram.writeBalls([self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location)], [ball_1_write, ball_2_write])
+
         # if the ball was found with a standard data status, then continue with dummy lookups
         if result_ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] == self.conf.DATA_STATUS:
             key = get_random_string(self.conf.BALL_SIZE - self.conf.BALL_STATUS_POSITION -1)
@@ -383,19 +390,24 @@ class HashTable:
         # table 1
         if ball_1[self.conf.BALL_STATUS_POSITION+1:] == key:
             result_ball = ball_1
-            self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, replacement_ball) 
+            ball_1_write = replacement_ball
+            # self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, replacement_ball) 
             self.reals_count -= 1
         else:
-            self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, ball_1) 
+            ball_1_write = ball_1
+            # self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, ball_1) 
         
         # table 2
         if ball_2[self.conf.BALL_STATUS_POSITION+1:] == key:
             result_ball = ball_2
-            self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), replacement_ball)
+            ball_2_write = replacement_ball
+            # self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), replacement_ball)
             self.reals_count -= 1
         else:
-            self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), ball_2)
-        
+            ball_2_write = ball_2
+            # self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), ball_2)
+        self.bins_ram.writeBalls([self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location)], [ball_1_write, ball_2_write])
+
         return result_ball
 
     # this function copies the previous layer into the current layer for intersperse

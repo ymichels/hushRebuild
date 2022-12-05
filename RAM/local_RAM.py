@@ -82,6 +82,12 @@ class local_RAM:
         if local_RAM.RT_READ % 1_000_000 == 0:
             print('RAM.RT_READ: ', local_RAM.RT_READ)
         return [self.readBall(location) for location in locations]
+    
+    def writeBalls(self, locations, balls):
+        local_RAM.RT_WRITE += 1
+        if local_RAM.RT_WRITE % 1_000_000 == 0:
+            print('RAM.RT_WRITE: ', local_RAM.RT_WRITE)
+        return [self.writeBall(location, ball) for location,ball in zip(locations,balls)]
 
     def getSize(self):
         if self.conf.FINAL:
