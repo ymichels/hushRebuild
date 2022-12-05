@@ -89,7 +89,7 @@ def debug_test():
     # RAM.RT_READ:  5056827
     # RAM.BALL_WRITE:  87572960
     # RAM.BALL_READ:  79399793
-    oram_size = 2**3*config.MU
+    oram_size = 2**5*config.MU
     oram = ORAM(oram_size)
     oram.cleanWriteMemory()
     oram.initial_build('testing_data.txt')
