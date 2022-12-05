@@ -352,7 +352,6 @@ class HashTable:
         replacement_ball = self.createDummies(1)[0]
         
         # read
-        # ball = self.overflow_ram.readBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location) 
         ball_1,ball_2 = self.overflow_ram.readBalls([self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location,self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location)]) 
 
         # table 1
@@ -382,7 +381,6 @@ class HashTable:
 
 
         # table 1
-        # ball = self.bins_ram.readBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location) 
         if ball_1[self.conf.BALL_STATUS_POSITION+1:] == key:
             result_ball = ball_1
             self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, replacement_ball) 
@@ -391,7 +389,6 @@ class HashTable:
             self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, ball_1) 
         
         # table 2
-        # ball = self.bins_ram.readBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location)) 
         if ball_2[self.conf.BALL_STATUS_POSITION+1:] == key:
             result_ball = ball_2
             self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), replacement_ball)
