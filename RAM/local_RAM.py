@@ -97,3 +97,9 @@ class local_RAM:
     def generate_random_memory(self, number_of_balls):
         self.memory = [get_random_string(self.conf.BALL_SIZE, self.conf.BALL_STATUS_POSITION, self.conf.DATA_STATUS) for _ in range(number_of_balls)]
         print('finished generation')
+
+def reset_counters():
+    local_RAM.BALL_READ = 0
+    local_RAM.BALL_WRITE = 0
+    local_RAM.RT_READ = 0
+    local_RAM.RT_WRITE = 0

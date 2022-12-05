@@ -2,7 +2,7 @@
 import random
 from ORAM import ORAM
 from PathORAM.path_ORAM import PathORAM
-from RAM.local_RAM import local_RAM
+from RAM.local_RAM import local_RAM, reset_counters
 from RAM.file_RAM import file_RAM
 from config import config
 from utils.helper_functions import get_random_string
@@ -20,7 +20,8 @@ def path_ORAM_test():
     real_ram = {}
     S = 20
     path_oram = PathORAM(2**S,True)
-    # path_oram.allocate_memory()
+    # allocating memory shouldn't count as 'writing'...
+    reset_counters()
     # print(path_oram.access('write',0,b'1234'))
     # print(path_oram.access('write',1,b'1235'))
     # print(path_oram.access('read',0))
@@ -92,6 +93,9 @@ def debug_test():
     oram_size = 2**5*config.MU
     oram = ORAM(oram_size)
     oram.cleanWriteMemory()
+
+    # allocating memory shouldn't count as 'writing'...
+    reset_counters()
     oram.initial_build('testing_data.txt')
     # data_ram = local_RAM('testing_data.txt', oram.conf)
     o = 0
@@ -123,9 +127,9 @@ import cProfile
 import pstats
 
 with cProfile.Profile() as pr:
-    debug_test()
+    path_ORAM_test()
 
 stats = pstats.Stats(pr)
 stats.sort_stats(pstats.SortKey.TIME)
 # stats.print_stats()
-stats.dump_stats(filename='debug_test_local_RAM.prof')
+stats.dump_stats(filename='path_ORAM_test_local_RAM.prof')
