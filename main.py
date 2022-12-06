@@ -17,7 +17,7 @@ def path_ORAM_test():
     # RAM.RT_READ:  10485760
     # RAM.BALL_WRITE:  813189040
     # RAM.BALL_READ:  796917760
-    real_ram = {}
+    # real_ram = {}
     S = 20
     path_oram = PathORAM(2**S,True)
     # allocating memory shouldn't count as 'writing'...
@@ -29,8 +29,8 @@ def path_ORAM_test():
     # print(path_oram.position_map_access(0))
     # print(path_oram.position_map_access(0))
     for i in range(int((2**S)/1)):
-        data = get_random_string(path_oram.conf.BALL_DATA_SIZE)
-        real_ram[i] = data
+        data = b'\x16'*path_oram.conf.BALL_DATA_SIZE
+        # real_ram[i] = data
         path_oram.access('write',i,data)
         if i % 1_000 == 0:
             print(i,': ',len(path_oram.local_stash))
@@ -42,10 +42,10 @@ def path_ORAM_test():
         # if i < 2**S:
         #     oram_ans = path_oram.access('read', i)
         oram_ans = path_oram.access('read', key)
-        if oram_ans != real_ram[key]:
-            oram_ans = path_oram.access('read', key)
-            oram_ans = path_oram.access('read', key)
-            raise 'ERROR!'
+        # if oram_ans != real_ram[key]:
+        #     oram_ans = path_oram.access('read', key)
+        #     oram_ans = path_oram.access('read', key)
+        #     raise 'ERROR!'
     
     print('RAM.RT_WRITE: ', local_RAM.RT_WRITE)
     print('RAM.RT_READ: ', local_RAM.RT_READ)
@@ -100,13 +100,13 @@ def debug_test():
     # data_ram = local_RAM('testing_data.txt', oram.conf)
     o = 0
     j=0
-    for i in range(oram_size + 50_000):
-        ball_to_read = oram.original_data_ram.readBall(random.randint(0,oram_size-1)*oram.conf.BALL_SIZE)
-        key = ball_to_read[1 + oram.conf.BALL_STATUS_POSITION:]
-        read_ball = oram.access('read',key)
+    for i in range(oram_size*2-1):
+        # ball_to_read = oram.original_data_ram.readBall(random.randint(0,oram_size-1)*oram.conf.BALL_SIZE)
+        # key = ball_to_read[1 + oram.conf.BALL_STATUS_POSITION:]
+        read_ball = oram.access('read',random.randint(0,oram_size-1).to_bytes(oram.conf.KEY_SIZE,'big'))
         j+=1
-        if read_ball != ball_to_read:
-            print("INACCUARE DATA!!!",read_ball,'::', ball_to_read)
+        # if read_ball != ball_to_read:
+        #     print("INACCUARE DATA!!!",read_ball,'::', ball_to_read)
         if o != oram.not_found:
             o= oram.not_found
             j=0
@@ -127,9 +127,9 @@ import cProfile
 import pstats
 
 with cProfile.Profile() as pr:
-    debug_test()
+    path_ORAM_test()
 
 stats = pstats.Stats(pr)
 stats.sort_stats(pstats.SortKey.TIME)
 # stats.print_stats()
-stats.dump_stats(filename='debug_test_local_RAM.prof')
+stats.dump_stats(filename='path_ORAM_test_local_RAM.prof')
