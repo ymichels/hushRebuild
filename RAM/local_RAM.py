@@ -94,8 +94,12 @@ class local_RAM:
             return 2*self.conf.DATA_SIZE
         return self.conf.DATA_SIZE
 
+    def generate_ball_with_random_key(self):
+        return self.empty_data + self.conf.DATA_STATUS + get_random_string(self.conf.KEY_SIZE)
+
     def generate_random_memory(self, number_of_balls):
-        self.memory = [get_random_string(self.conf.BALL_SIZE, self.conf.BALL_STATUS_POSITION, self.conf.DATA_STATUS) for _ in range(number_of_balls)]
+        self.empty_data = self.conf.BALL_DATA_SIZE*self.conf.DUMMY_STATUS
+        self.memory = [self.generate_ball_with_random_key() for _ in range(number_of_balls)]
         print('finished generation')
 
 def reset_counters():
