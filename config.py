@@ -15,6 +15,7 @@ class config(baseConfig):
     # this must be an even number. to be corrected in a future version
     BALL_DATA_SIZE = 6
     # the balls structure:  DATA || STATUS || KEY
+    BALL_STATUS_POSITION = BALL_DATA_SIZE
     BALL_SIZE = BALL_DATA_SIZE + 1 + KEY_SIZE
     LOG_LAMBDA = 9
     MU = 30*LOG_LAMBDA**3
@@ -44,7 +45,6 @@ class config(baseConfig):
     CUCKOO_HASH_KEY_1 = b'Cuckoo hash key1'
     CUCKOO_HASH_KEY_2 = b'Cuckoo hash key2'
     
-    BALL_STATUS_POSITION = 4
     DUMMY_STATUS = b'\x00'
     DATA_STATUS = b'\x01'
     STASH_DATA_STATUS = b'\x02'

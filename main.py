@@ -127,9 +127,9 @@ import cProfile
 import pstats
 
 with cProfile.Profile() as pr:
-    path_ORAM_test()
+    debug_test()
 
 stats = pstats.Stats(pr)
 stats.sort_stats(pstats.SortKey.TIME)
 # stats.print_stats()
-stats.dump_stats(filename='path_ORAM_test_local_RAM.prof')
+stats.dump_stats(filename='debug_test_local_RAM.prof')
