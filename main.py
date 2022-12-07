@@ -18,7 +18,7 @@ def path_ORAM_test():
     # RAM.BALL_WRITE:  813189040
     # RAM.BALL_READ:  796917760
     # real_ram = {}
-    S = 20
+    S = 23
     path_oram = PathORAM(2**S,True)
     # allocating memory shouldn't count as 'writing'...
     reset_counters()
@@ -90,7 +90,7 @@ def debug_test():
     # RAM.RT_READ:  5056827
     # RAM.BALL_WRITE:  87572960
     # RAM.BALL_READ:  79399793
-    oram_size = 2**5*config.MU
+    oram_size = 2**9*config.MU
     oram = ORAM(oram_size)
     oram.cleanWriteMemory()
 
@@ -120,6 +120,23 @@ def debug_test():
     print('RAM.BALL_READ: ', local_RAM.BALL_READ)
     print('done!')
 
+def ram_test():
+    size = 2**20
+    ram = local_RAM('bla',config(size))
+    ram.generate_random_memory(size)
+    reset_counters()
+    print('generated')
+    for i in range(size*2):
+        ball = ram.readBall(random.randint(0,size-1)*ram.conf.BALL_SIZE)
+        ram.writeBall(random.randint(0,size-1)*ram.conf.BALL_SIZE,ball)
+        if i % 10_000 == 0:
+            print('accesses: ',i)
+    print('RAM.RT_WRITE: ', local_RAM.RT_WRITE)
+    print('RAM.RT_READ: ', local_RAM.RT_READ)
+    print('RAM.BALL_WRITE: ', local_RAM.BALL_WRITE)
+    print('RAM.BALL_READ: ', local_RAM.BALL_READ)
+    print('done!')
+
 
 
 # debug_test()
@@ -127,9 +144,9 @@ import cProfile
 import pstats
 
 with cProfile.Profile() as pr:
-    path_ORAM_test()
+    debug_test()
 
 stats = pstats.Stats(pr)
 stats.sort_stats(pstats.SortKey.TIME)
 # stats.print_stats()
-stats.dump_stats(filename='path_ORAM_test_local_RAM.prof')
+stats.dump_stats(filename='our_ORAM_100MB.prof')

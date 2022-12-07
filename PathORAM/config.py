@@ -13,7 +13,7 @@ class config(baseConfig):
         self.X = 2
         self.KEY_SIZE = math.ceil(math.ceil(math.log(N,2))/8)
         if not is_map:
-            self.BALL_DATA_SIZE = 4
+            self.BALL_DATA_SIZE = 16
             # the balls structure:  KEY || LEAF || DATA
             self.BALL_SIZE = 2*self.KEY_SIZE + self.BALL_DATA_SIZE
         else:

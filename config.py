@@ -13,7 +13,7 @@ class config(baseConfig):
 
     #NOTE: because constructCapacityThresholdBall and deconstructCapacityThresholdBall are not well implemented, 
     # this must be an even number. to be corrected in a future version
-    BALL_DATA_SIZE = 6
+    BALL_DATA_SIZE = 16
     # the balls structure:  DATA || STATUS || KEY
     BALL_STATUS_POSITION = BALL_DATA_SIZE
     BALL_SIZE = BALL_DATA_SIZE + 1 + KEY_SIZE

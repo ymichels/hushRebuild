@@ -109,7 +109,7 @@ class HashTable:
             self.byte_operations.writeTransposed(ram, balls, offset, start_loc + i*self.conf.BALL_SIZE)
         
     def localTightCompaction(self, balls, dummy_statuses):
-        random.shuffle(balls)
+        # random.shuffle(balls)
         dummies = []
         result = []
         for ball in balls:
@@ -436,7 +436,7 @@ class HashTable:
             balls = self.localTightCompaction(balls, [self.conf.DUMMY_STATUS])
             stash_balls = list(self.local_stash.values())
             balls = balls[:self.conf.MU-len(stash_balls)] + stash_balls
-            random.shuffle(balls)
+            # random.shuffle(balls)
             self.bins_ram.writeChunks([(0,self.conf.MU * self.conf.BALL_SIZE)], balls)
             return
         
