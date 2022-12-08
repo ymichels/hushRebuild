@@ -121,7 +121,7 @@ def debug_test():
     print('done!')
 
 def ram_test():
-    size = 2**20
+    size = int(((2**20)*100)/16)
     ram = local_RAM('bla',config(size))
     ram.generate_random_memory(size)
     reset_counters()
@@ -144,9 +144,9 @@ import cProfile
 import pstats
 
 with cProfile.Profile() as pr:
-    debug_test()
+    ram_test()
 
 stats = pstats.Stats(pr)
 stats.sort_stats(pstats.SortKey.TIME)
 # stats.print_stats()
-stats.dump_stats(filename='our_ORAM_100MB.prof')
+stats.dump_stats(filename='ram_test_100MB.prof')
