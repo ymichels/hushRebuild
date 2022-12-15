@@ -111,7 +111,6 @@ def debug_test(oram_size):
             j=0
         if i % 10_000 == 0:
             print('accesses: ',i)
-            # print('not-found ratio: ', oram.not_found/(i+1))
     
     print('RAM.RT_WRITE: ', local_RAM.RT_WRITE)
     print('RAM.RT_READ: ', local_RAM.RT_READ)
