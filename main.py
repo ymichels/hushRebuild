@@ -106,9 +106,6 @@ def debug_test(oram_size):
         j+=1
         # if read_ball != ball_to_read:
         #     print("INACCUARE DATA!!!",read_ball,'::', ball_to_read)
-        if o != oram.not_found:
-            o= oram.not_found
-            j=0
         if i % 10_000 == 0:
             print('accesses: ',i)
     
