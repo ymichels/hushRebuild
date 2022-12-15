@@ -132,14 +132,12 @@ class ORAM:
         balls = hash_table_one.localTightCompaction(balls, [self.conf.DUMMY_STATUS])
         stash_balls = list(hash_table_one.local_stash.values())
         balls = balls[:self.conf.MU-len(stash_balls)] + stash_balls
-        # random.shuffle(balls)
         hash_table_one.bins_ram.writeChunks([(0,hash_table_one.conf.MU * hash_table_one.conf.BALL_SIZE)], balls)           
     
     def intersperseStashAndLevelOne(self):
         hash_table_one = self.tables[0]
         balls = list(self.local_stash.values())
         balls.extend(hash_table_one.bins_ram.readChunks([[0, hash_table_one.conf.MU*hash_table_one.conf.BALL_SIZE]]))
-        # random.shuffle(balls)
         hash_table_one.bins_ram.writeChunks([[0, 2*hash_table_one.conf.MU*hash_table_one.conf.BALL_SIZE]], balls)
         hash_table_one.reals_count += self.stash_reals_count
         hash_table_one.is_built = False
