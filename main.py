@@ -7,7 +7,7 @@ from RAM.file_RAM import file_RAM
 from config import config
 from utils.helper_functions import get_random_string
 
-#https://github.com/ymichels/hushRebuild
+# https://github.com/ymichels/hushRebuild
 
 # path ORAM test
 def path_ORAM_test(number_of_blocks):

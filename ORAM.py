@@ -67,7 +67,6 @@ class ORAM:
         
         # something must always be added to the stash
         if not is_found or original_key in self.local_stash.keys():
-            # (creating a dummy ball might not be necessary)
             dummy_ball = get_random_string(self.conf.BALL_SIZE,self.conf.BALL_STATUS_POSITION, self.conf.DUMMY_STATUS)
             self.local_stash[dummy_ball[self.conf.BALL_STATUS_POSITION+1:]] = dummy_ball
         else: # else, something real was added to the stash.
