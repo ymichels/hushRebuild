@@ -40,9 +40,37 @@ rebuild()
             return
     # if it reached here then all the tables were extracted, which means the final table needs to be rebuilt
     final_table = hash_tables[-1]
-    random_arr.tight_compaction()
+    random_arr.oblivious_tight_compaction()
     random_arr = the first half of random_arr (to take only the reals)
     final_table.rebuild(from=random_arr)
+
+
+
+
+- The hash-table building block.
+    in this section we will show the implementation of the hash-table building block. it is composed of four
+    main functionalities:
+    - rebuild
+    - extract
+    - intersperse
+    - lookup
+
+rebuild(from) # a variable indicating the array of sequential data that should be written to the hash
+    local_stash = {}
+    1. ballsIntoBins - for each 2\mu blocks in 'from' - insert each block to the randomly assigned bin according to an AES function
+    2. moveSecretLoad - moves N/log \lambda blocks blocks to the overflow pile (without revealing how many blocks were taken from each bin)
+    (the implementation of moveSecretLoad will be described in a later section)
+    3. oblivious_tight_compaction the overflow pile (the implementation of oblivious tight compaction will be described in a later section)
+    4. cuckooHashBins - for each bin, copy the bin to the local memory implement cuckoo-hash with a stash and two tables, each of size \Mu.
+    the stash will not exceed log \lambda size with high probablitiy, write log \lambda blocks to the overflow pile (pad with dummies if needed)
+    5. obliviousBallsIntoBins - for the overflow pile, execute oblivious random bin assignment as described in "Bucket Oblivious Sort"
+    6. cuckoooverflow - for each bin in the overflow, copy the bin to the local memory implement cuckoo-hash with a stash and two tables, 
+    each of size \Mu. save all the stash locally in one place for all the bins in the overflow.
+    is_built = True
+
+extract()
+    1. copy the overflow pile to the end of the bins 
+    2. execute oblivious_tight_compaction_hide_mixed_stripe on the bins & overflow pile (where the mixed stripe is the-number-of-real-blocks +- N/4)
 
 
 
