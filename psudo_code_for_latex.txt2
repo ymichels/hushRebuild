@@ -1,0 +1,48 @@
+- We use the hash table as a black-box componant. its implementation will be described in a different section.
+Our ORAM has one function accessable by our API - access, which keeps things simple for our users.
+(it also has a constructor which allocated memory and initializes the ~log N hash tables)
+
+Access(op = 'r'|'w', key, value = Null):
+    found = False
+    block = dummy
+    first search local_stash for the blocl if found - change found to True
+    for table in hash_tables:
+        if found:
+            table.lookup(dummy)
+        if not found:
+            block = table.lookup(key)
+            if block.key = key:
+                found = True
+    if op = 'w' - edit block accordingly
+    local_stash[block.key] = block
+    if |local_stash| = \Mu:
+        rebuild()
+    return block
+
+The second function of our construction is the rebuild function which occures every \Mu accesses
+- Note, in the edge cases where the smallest hash-table needs to be built or extracted we wrote different code
+  for this use-case which copies the hash-table to the local memroy, processes it, and rewrites it. for esthetic 
+  purposes we omitted this part from the psudo-code implementation.
+
+rebuild()
+    for table in hash_tables:
+        if table is built:
+            table.extract()
+        else:
+            break
+    random_arr = local_stash  # a randomly shuffled array
+    for table in hash_tables:
+        if table is extracted:
+            random_arr = random_arr || table
+            random_arr.intersperse()
+        else
+            table.rebuild(from=random_arr)
+            return
+    # if it reached here then all the tables were extracted, which means the final table needs to be rebuilt
+    final_table = hash_tables[-1]
+    random_arr.tight_compaction()
+    random_arr = the first half of random_arr (to take only the reals)
+    final_table.rebuild(from=random_arr)
+
+
+
