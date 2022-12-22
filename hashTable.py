@@ -48,7 +48,7 @@ class HashTable:
     # This function prepares the bins for writing.
     # It fills the bins with empty values.
     def cleanWriteMemory(self):
-        # #Cleaning the bins
+        # Cleaning the bins
         current_write = 0
         while current_write < self.conf.DATA_SIZE*2:
             self.bins_ram.writeChunks(
@@ -109,7 +109,6 @@ class HashTable:
             self.byte_operations.writeTransposed(ram, balls, offset, start_loc + i*self.conf.BALL_SIZE)
         
     def localTightCompaction(self, balls, dummy_statuses):
-        # random.shuffle(balls)
         dummies = []
         result = []
         for ball in balls:
@@ -163,16 +162,16 @@ class HashTable:
             if iteration_num*(1/self.conf.EPSILON) + i >= self.conf.NUMBER_OF_BINS:
                 break
             
-            #generate a threshold
+            # generate a threshold
             threshold = self.threshold_generator.generate()
             while threshold >= capacity:
                 raise Exception("Error, threshold is greater than capacity")
                 
-            #Add only the balls above the threshold
+            # Add only the balls above the threshold
             write_balls.extend(bin_top[- (capacity - threshold):])
             i +=1
             
-            #write back only the balls beneath the threshold
+            # write back only the balls beneath the threshold
             write_back = bin_top[:- (capacity - threshold)]
             write_back.extend(self.createDummies(len(bin_top) - len(write_back)))
             write_back_balls.extend(write_back)
@@ -186,7 +185,7 @@ class HashTable:
         # Write to the overflow transposed (for the tight compaction later)
         self.byte_operations.writeTransposed(self.overflow_ram, write_balls, self.conf.NUMBER_OF_BINS_IN_OVERFLOW, iteration_num*self.conf.BALL_SIZE)
         
-        #Write back to the bins
+        # Write back to the bins
         self.bins_ram.writeChunks(write_to_bins_chunks[:i], write_back_balls)
         
         return capacity_threshold_balls
@@ -359,21 +358,17 @@ class HashTable:
         if ball_1[self.conf.BALL_STATUS_POSITION+1:] == key:
             result_ball = ball_1
             ball_1_write = replacement_ball
-            # self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, replacement_ball)
             self.reals_count -= 1
         else:
             ball_1_write = ball_1
-            # self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, ball_1)
         
         # table 2
         if ball_2[self.conf.BALL_STATUS_POSITION+1:] == key:
             result_ball = ball_2
             ball_2_write = replacement_ball
-            # self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), replacement_ball)
             self.reals_count -= 1
         else:
             ball_2_write = ball_2
-            # self.overflow_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), ball_2)
         
         self.overflow_ram.writeBalls([self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location)], [ball_1_write, ball_2_write])
 
@@ -391,21 +386,17 @@ class HashTable:
         if ball_1[self.conf.BALL_STATUS_POSITION+1:] == key:
             result_ball = ball_1
             ball_1_write = replacement_ball
-            # self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, replacement_ball) 
             self.reals_count -= 1
         else:
             ball_1_write = ball_1
-            # self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, ball_1) 
         
         # table 2
         if ball_2[self.conf.BALL_STATUS_POSITION+1:] == key:
             result_ball = ball_2
             ball_2_write = replacement_ball
-            # self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), replacement_ball)
             self.reals_count -= 1
         else:
             ball_2_write = ball_2
-            # self.bins_ram.writeBall(self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location), ball_2)
         self.bins_ram.writeBalls([self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*table1_location, self.conf.BIN_SIZE_IN_BYTES*bin_num + self.conf.BALL_SIZE*(self.conf.MU + table2_location)], [ball_1_write, ball_2_write])
 
         return result_ball
@@ -436,7 +427,6 @@ class HashTable:
             balls = self.localTightCompaction(balls, [self.conf.DUMMY_STATUS])
             stash_balls = list(self.local_stash.values())
             balls = balls[:self.conf.MU-len(stash_balls)] + stash_balls
-            # random.shuffle(balls)
             self.bins_ram.writeChunks([(0,self.conf.MU * self.conf.BALL_SIZE)], balls)
             return
         

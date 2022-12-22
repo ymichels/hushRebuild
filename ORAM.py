@@ -67,7 +67,6 @@ class ORAM:
         
         # something must always be added to the stash
         if not is_found or original_key in self.local_stash.keys():
-            # (creating a dummy ball might not be necessary)
             dummy_ball = get_random_string(self.conf.BALL_SIZE,self.conf.BALL_STATUS_POSITION, self.conf.DUMMY_STATUS)
             self.local_stash[dummy_ball[self.conf.BALL_STATUS_POSITION+1:]] = dummy_ball
         else: # else, something real was added to the stash.
@@ -133,14 +132,12 @@ class ORAM:
         balls = hash_table_one.localTightCompaction(balls, [self.conf.DUMMY_STATUS])
         stash_balls = list(hash_table_one.local_stash.values())
         balls = balls[:self.conf.MU-len(stash_balls)] + stash_balls
-        # random.shuffle(balls)
         hash_table_one.bins_ram.writeChunks([(0,hash_table_one.conf.MU * hash_table_one.conf.BALL_SIZE)], balls)           
     
     def intersperseStashAndLevelOne(self):
         hash_table_one = self.tables[0]
         balls = list(self.local_stash.values())
         balls.extend(hash_table_one.bins_ram.readChunks([[0, hash_table_one.conf.MU*hash_table_one.conf.BALL_SIZE]]))
-        # random.shuffle(balls)
         hash_table_one.bins_ram.writeChunks([[0, 2*hash_table_one.conf.MU*hash_table_one.conf.BALL_SIZE]], balls)
         hash_table_one.reals_count += self.stash_reals_count
         hash_table_one.is_built = False
