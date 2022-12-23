@@ -1,4 +1,5 @@
 from config import config
+import random
 from utils.byte_operations import ByteOperations
 
 class CuckooHash:
@@ -15,6 +16,7 @@ class CuckooHash:
         self.stash = []
 
     def insert_bulk(self,balls):
+        random.shuffle(balls)
         for ball in balls:
             if ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION+1] == self.conf.DUMMY_STATUS:
                 continue
