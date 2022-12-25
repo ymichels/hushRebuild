@@ -34,7 +34,7 @@ rebuild()
     for table in hash_tables:
         if table is extracted:
             random_arr = random_arr || table
-            random_arr.intersperse()
+            random_arr.intersperse(table.N, table.N) # intersperse receives R & D indicating how many ones & zeros shouldbe in the auxiliary array
         else
             table.rebuild(from=random_arr)
             return
@@ -52,7 +52,6 @@ rebuild()
     main functionalities:
     - rebuild
     - extract
-    - intersperse
     - lookup
 
 rebuild(from) # a variable indicating the array of sequential data that should be written to the hash
@@ -66,11 +65,47 @@ rebuild(from) # a variable indicating the array of sequential data that should b
     5. obliviousBallsIntoBins - for the overflow pile, execute oblivious random bin assignment as described in "Bucket Oblivious Sort"
     6. cuckoooverflow - for each bin in the overflow, copy the bin to the local memory implement cuckoo-hash with a stash and two tables, 
     each of size \Mu. save all the stash locally in one place for all the bins in the overflow.
-    is_built = True
+    7. is_built = True
+    8. real_blocks_counter = from.real_blocks_counter # to keep track on how many real blocks are in the table
 
 extract()
     1. copy the overflow pile to the end of the bins 
-    2. execute oblivious_tight_compaction_hide_mixed_stripe on the bins & overflow pile (where the mixed stripe is the-number-of-real-blocks +- N/4)
+    2. execute oblivious_tight_compaction_hide_mixed_stripe on the bins & overflow pile (where the mixed stripe is the-number-of-real-blocks +- N/2)
+        *Note the table is on (2 + 2/lambda)N memory blocks as the hash tables contain many dummies.
+    3. now all the real blocks are at the begining. 
+        execute intersperse on the first N blocks of the memory (R - the number of real blocks, D - the number of dummies)
+        *Note: the first N blocks which holds all the reals & some dummies
+        *Note: we know how many real blocks a table holds by keeping a simple counter.
+        *Note: we intersperse hiding the mixed stripe.
+    4. the table is now contained within the first N blocks.
+
+lookup(key)
+    0. new_key = key
+    1. using a PRF (AES) on the key get a bin in the overflow pile.
+    2. using a PRF (AES) on the key get two locations for a cuckoo hash (one for each table)
+    3. read the two locations (first round-trip : read)
+    4. if the key is found:
+        a. write back a dummy in the place where it was found & write back whatever was in the other location. (first round-trip : write)
+        b. if the block contained a status indicating it came from a stash:
+                new_key = key
+           else:
+                new_key = random_key
+       else:
+           write back whatever was in the two location. (first round-trip : write)
+    5. using a PRF (AES) on the new_key get a bin.
+    6. using a PRF (AES) on the new_key get two locations for a cuckoo hash (one for each table)
+    7. read the two locations (second round-trip : read)
+    8. if the key is found:
+           write back a dummy in the place where it was found & write back whatever was in the other location. (second round-trip : write)
+       else:
+           write back whatever was in the two location. (second round-trip : write)
+    9. if found: real_blocks_counter--
+    10. return the block if it was found, otherwise return a dummy
+
+
+        
+
+
 
 
 
