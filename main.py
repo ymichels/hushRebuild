@@ -31,11 +31,12 @@ def path_ORAM_test(number_of_blocks):
         if i % 1_000 == 0:
             print(i,': ',len(path_oram.local_stash))
 
-    for i in range(number_of_blocks):
-        if i % 1_000 == 0:
-            print(i,': ',len(path_oram.local_stash))
-        key = random.randint(0,number_of_blocks - 1)
-        oram_ans = path_oram.access('read', key)
+    # for a 2N test...
+    # for i in range(number_of_blocks):
+    #     if i % 1_000 == 0:
+    #         print(i,': ',len(path_oram.local_stash))
+    #     key = random.randint(0,number_of_blocks - 1)
+    #     oram_ans = path_oram.access('read', key)
         # if oram_ans != real_ram[key]:
         #     raise 'ERROR!'
     
@@ -55,10 +56,11 @@ def our_ORAM_test(oram_size):
     # allocating memory shouldn't count as 'writing'...
     reset_counters()
     oram.initial_build('testing_data.txt')
-    for i in range(oram_size*2-1):
+    for i in range(oram_size-1):
         read_ball = oram.access('read',random.randint(0,oram_size-1).to_bytes(oram.conf.KEY_SIZE,'big'))
         if i % 10_000 == 0:
             print('accesses: ',i)
+            print('fraction done: ',i/oram_size)
     
     print('RAM.RT_WRITE: ', local_RAM.RT_WRITE)
     print('RAM.RT_READ: ', local_RAM.RT_READ)
@@ -71,7 +73,7 @@ def ram_test(number_of_blocks):
     ram.generate_random_memory(number_of_blocks)
     reset_counters()
     print('generated')
-    for i in range(number_of_blocks*2):
+    for i in range(number_of_blocks):
         ball = ram.readBall(random.randint(0,number_of_blocks-1)*ram.conf.BALL_SIZE)
         ram.writeBall(random.randint(0,number_of_blocks-1)*ram.conf.BALL_SIZE,ball)
         if i % 10_000 == 0:
