@@ -111,7 +111,7 @@ ps.dump_stats(filename='test-{}.size-{}MB.prof'.format(test_type, number_of_MB))
 
 file = open('test-{}.size-{}MB'.format(test_type, number_of_MB),'w')
 file.write(
-    'accesses:{}\n'.format(number_of_blocks*2) +
+    'accesses:{}\n'.format(number_of_blocks) +
     'RAM.RT_WRITE:{}\n'.format(local_RAM.RT_WRITE) +
     'RAM.RT_READ:{}\n'.format(local_RAM.RT_READ) +
     'RAM.BALL_WRITE:{}\n'.format(local_RAM.BALL_WRITE) +
