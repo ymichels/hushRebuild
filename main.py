@@ -103,7 +103,7 @@ else:
     ram_test(number_of_blocks)
 pr.disable()
 s = StringIO()
-sortby = pstats.SecretKey.CUMULATIVE
+sortby = pstats.SortKey.CUMULATIVE
 ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
 # stats = pstats.Stats(pr)
 # stats.sort_stats(pstats.SortKey.TIME)
