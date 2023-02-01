@@ -9,10 +9,10 @@ from utils.helper_functions import get_random_string
 import ctypes
 
 # Get the current process handle
-hProcess = ctypes.windll.kernel32.GetCurrentProcess()
+# hProcess = ctypes.windll.kernel32.GetCurrentProcess()
 
 # Set the minimum and maximum working set sizes to the maximum possible values
-ctypes.windll.kernel32.SetProcessWorkingSetSize(hProcess, -1, -1)
+# ctypes.windll.kernel32.SetProcessWorkingSetSize(hProcess, -1, -1)
 
 
 # https://github.com/ymichels/hushRebuild

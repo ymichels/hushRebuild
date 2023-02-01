@@ -48,7 +48,7 @@ rebuild()
 
 
 - The hash-table building block.
-    in this section we will show the implementation of the hash-table building block. it is composed of four
+    in this section we will show the implementation of the hash-table building block. it is composed of three
     main functionalities:
     - rebuild
     - extract
