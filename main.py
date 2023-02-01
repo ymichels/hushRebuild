@@ -49,10 +49,11 @@ def path_ORAM_test(number_of_blocks):
     
     
 #our ORAM test
-def our_ORAM_test(oram_size):
+def our_ORAM_test(oram_size, test_type, number_of_MB):
+
     oram = ORAM(oram_size)
     oram.cleanWriteMemory()
-
+    percent = 0.0
     # allocating memory shouldn't count as 'writing'...
     reset_counters()
     oram.initial_build('testing_data.txt')
@@ -61,6 +62,12 @@ def our_ORAM_test(oram_size):
         if i % 10_000 == 0:
             print('accesses: ',i)
             print('fraction done: ',i/oram_size)
+            if i/oram_size > percent + 0.01:
+                percent += 0.01
+                log_file = open('log-test-{}.size-{}MB'.format(test_type, number_of_MB),'w')
+                log_file.write(str(percent))
+                log_file.close()
+
     
     print('RAM.RT_WRITE: ', local_RAM.RT_WRITE)
     print('RAM.RT_READ: ', local_RAM.RT_READ)
@@ -94,9 +101,10 @@ test_type = int(input('Enter test type:\n1) Our ORAM\n2) Path ORAM\n3) RAM\n'))
 number_of_MB = int(input('How many MB should the test run?\n'))
 number_of_blocks = int((number_of_MB*(2**20))/16)
 pr = cProfile.Profile()
+# log_file = open('log-test-{}.size-{}MB'.format(test_type, number_of_MB),'w')
 pr.enable()
 if test_type == 1:
-    our_ORAM_test(number_of_blocks)
+    our_ORAM_test(number_of_blocks, test_type, number_of_MB)
 elif test_type == 2:
     path_ORAM_test(number_of_blocks)
 else:
