@@ -3,7 +3,7 @@ import random
 from ORAM import ORAM
 from PathORAM.path_ORAM import PathORAM
 from RAM.local_RAM import local_RAM, reset_counters
-from RAM.file_RAM import file_RAM
+# from RAM.file_RAM import file_RAM
 from config import config
 from utils.helper_functions import get_random_string
 import ctypes
@@ -104,7 +104,7 @@ with cProfile.Profile() as pr:
 stats = pstats.Stats(pr)
 stats.sort_stats(pstats.SortKey.TIME)
 stats.dump_stats(filename='test-{}.size-{}MB.prof'.format(test_type, number_of_MB))
-
+import os
 file = open('test-{}.size-{}MB'.format(test_type, number_of_MB),'w')
 file.write(
     'accesses:{}\n'.format(number_of_blocks*2) +
