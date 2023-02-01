@@ -88,23 +88,27 @@ def ram_test(number_of_blocks):
 
 import cProfile
 import pstats
-
+from io import StringIO
 
 test_type = int(input('Enter test type:\n1) Our ORAM\n2) Path ORAM\n3) RAM\n'))
 number_of_MB = int(input('How many MB should the test run?\n'))
 number_of_blocks = int((number_of_MB*(2**20))/16)
-with cProfile.Profile() as pr:
-    if test_type == 1:
-        our_ORAM_test(number_of_blocks)
-    elif test_type == 2:
-        path_ORAM_test(number_of_blocks)
-    else:
-        ram_test(number_of_blocks)
+pr = cProfile.Profile()
+pr.enable()
+if test_type == 1:
+    our_ORAM_test(number_of_blocks)
+elif test_type == 2:
+    path_ORAM_test(number_of_blocks)
+else:
+    ram_test(number_of_blocks)
+pr.disable()
+s = StringIO()
+sortby = pstats.SecretKey.CUMULATIVE
+ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+# stats = pstats.Stats(pr)
+# stats.sort_stats(pstats.SortKey.TIME)
+ps.dump_stats(filename='test-{}.size-{}MB.prof'.format(test_type, number_of_MB))
 
-stats = pstats.Stats(pr)
-stats.sort_stats(pstats.SortKey.TIME)
-stats.dump_stats(filename='test-{}.size-{}MB.prof'.format(test_type, number_of_MB))
-import os
 file = open('test-{}.size-{}MB'.format(test_type, number_of_MB),'w')
 file.write(
     'accesses:{}\n'.format(number_of_blocks*2) +
