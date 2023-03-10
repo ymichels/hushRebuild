@@ -52,21 +52,28 @@ def path_ORAM_test(number_of_blocks):
 def our_ORAM_test(oram_size, test_type, number_of_MB):
 
     oram = ORAM(oram_size)
-    oram.cleanWriteMemory()
+    # oram.cleanWriteMemory()
     percent = 0.0
     # allocating memory shouldn't count as 'writing'...
     reset_counters()
     oram.initial_build('testing_data.txt')
-    for i in range(oram_size-1):
-        read_ball = oram.access('read',random.randint(0,oram_size-1).to_bytes(oram.conf.KEY_SIZE,'big'))
+    for i in range(0,oram_size-1,oram.conf.MU):
+        # read_ball = oram.access('read',random.randint(0,oram_size-1).to_bytes(oram.conf.KEY_SIZE,'big'))
+        btc = oram.built_tables_count()
+        local_RAM.BALL_READ += 4*btc*oram.conf.MU
+        local_RAM.RT_READ += 2*btc*oram.conf.MU
+        local_RAM.BALL_WRITE += 4*btc*oram.conf.MU
+        local_RAM.RT_WRITE += 2*btc*oram.conf.MU
+        oram.rebuild()
         if i % 10_000 == 0:
             print('accesses: ',i)
             print('fraction done: ',i/oram_size)
             if i/oram_size > percent + 0.01:
                 percent += 0.01
-                log_file = open('log-test-{}.size-{}MB'.format(test_type, number_of_MB),'w')
-                log_file.write(str(percent))
-                log_file.close()
+                print(percent)
+                # log_file = open('log-test-{}.size-{}MB'.format(test_type, number_of_MB),'w')
+                # log_file.write(str(percent))
+                # log_file.close()
 
     
     print('RAM.RT_WRITE: ', local_RAM.RT_WRITE)
@@ -115,9 +122,9 @@ sortby = 'time' #pstats.SortKey.CUMULATIVE
 ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
 # stats = pstats.Stats(pr)
 # stats.sort_stats(pstats.SortKey.TIME)
-ps.dump_stats(filename='test-{}.size-{}MB.prof'.format(test_type, number_of_MB))
+ps.dump_stats(filename='_test-{}.size-{}MB.prof'.format(test_type, number_of_MB))
 
-file = open('test-{}.size-{}MB'.format(test_type, number_of_MB),'w')
+file = open('_test-{}.size-{}MB'.format(test_type, number_of_MB),'w')
 file.write(
     'accesses:{}\n'.format(number_of_blocks) +
     'RAM.RT_WRITE:{}\n'.format(local_RAM.RT_WRITE) +

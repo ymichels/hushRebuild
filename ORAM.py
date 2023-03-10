@@ -28,6 +28,13 @@ class ORAM:
         while current_number_of_blocks <= number_of_blocks:
             self.tables.append(HashTable(config(current_number_of_blocks)))
             current_number_of_blocks *= 2
+    
+    def built_tables_count(self):
+        count = 0
+        for table in self.tables:
+            if table.is_built:
+                count += 1
+        return count
             
     
     def cleanWriteMemory(self):
@@ -40,7 +47,7 @@ class ORAM:
         final_table = self.tables[-1]
         temp = final_table.data_ram
         self.original_data_ram = local_RAM(data_location, final_table.conf)
-        self.original_data_ram.generate_random_memory(final_table.conf.N)
+        # self.original_data_ram.generate_random_memory(final_table.conf.N)
         final_table.data_ram = self.original_data_ram
         final_table.rebuild(final_table.conf.N)
         final_table.data_ram = temp
@@ -107,12 +114,12 @@ class ORAM:
             previous_table = self.tables[i-1]
             current_table = self.tables[i]
             if current_table.is_built:
-                current_table.copyToEndOfBins(previous_table.bins_ram, previous_table.reals_count)
+                current_table.copyToEndOfBins(previous_table.bins_ram, 0)
                 current_table.intersperse()
                 current_table.is_built = False
             else:
                 current_table.data_ram = previous_table.bins_ram
-                current_table.rebuild(previous_table.reals_count)
+                current_table.rebuild(0)
                 return
         final_table = self.tables[-1]
         
@@ -123,8 +130,12 @@ class ORAM:
     
     def extractLevelOne(self):
         # TODO: this can be done more efficiently if written in the same function
-        self.tightCompactionLevelOne()
-        self.intersperseStashAndLevelOne()   
+        # self.tightCompactionLevelOne()
+        # self.intersperseStashAndLevelOne()   
+        local_RAM.BALL_READ += self.conf.BIN_SIZE
+        local_RAM.RT_READ += 1
+        local_RAM.BALL_WRITE += self.conf.BIN_SIZE
+        local_RAM.RT_WRITE += 1  
         
     def tightCompactionLevelOne(self):
         hash_table_one = self.tables[0]
@@ -144,12 +155,14 @@ class ORAM:
     
     def rebuildLevelOne(self):
         hash_table_one = self.tables[0]
-        cuckoo_hash = CuckooHash(hash_table_one.conf)
-        cuckoo_hash.insert_bulk(list(self.local_stash.values()))
-        hash_table_one.bins_ram.writeChunks([[0, hash_table_one.conf.BIN_SIZE_IN_BYTES]], cuckoo_hash.table1 + cuckoo_hash.table2)
-        hash_table_one.local_stash = hash_table_one.byte_operations.ballsToDictionary(cuckoo_hash.stash)
+        # cuckoo_hash = CuckooHash(hash_table_one.conf)
+        # cuckoo_hash.insert_bulk(list(self.local_stash.values()))
+        # hash_table_one.bins_ram.writeChunks([[0, hash_table_one.conf.BIN_SIZE_IN_BYTES]], cuckoo_hash.table1 + cuckoo_hash.table2)
+        local_RAM.BALL_WRITE += hash_table_one.conf.BIN_SIZE
+        local_RAM.RT_WRITE += 1
+        # hash_table_one.local_stash = hash_table_one.byte_operations.ballsToDictionary(cuckoo_hash.stash)
         hash_table_one.is_built = True
-        hash_table_one.reals_count = self.stash_reals_count
+        # hash_table_one.reals_count = self.stash_reals_count
         
         
             

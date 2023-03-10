@@ -81,9 +81,13 @@ class ByteOperations:
         return balls[-shift:] + balls[:-shift]
    
     def obliviousShiftData(self, ram, number_of_bins, shift_position):
-        for i in range(number_of_bins):
-            balls = self.readTransposedAndShifted(ram, number_of_bins, i*self.conf.BALL_SIZE, 2*self.conf.MU, shift_position)
-            self.writeTransposed(ram, balls, number_of_bins, i*self.conf.BALL_SIZE)
+        # for i in range(number_of_bins):
+            # balls = self.readTransposedAndShifted(ram, number_of_bins, i*self.conf.BALL_SIZE, 2*self.conf.MU, shift_position)
+        local_RAM.BALL_READ += number_of_bins*2*self.conf.MU
+        local_RAM.RT_READ += 1*number_of_bins
+        local_RAM.BALL_WRITE += 2*self.conf.MU*number_of_bins
+        local_RAM.RT_WRITE += 1*number_of_bins
+            # self.writeTransposed(ram, balls, number_of_bins, i*self.conf.BALL_SIZE)
     
     def removeSecondStatus(self, balls):
         result = []
