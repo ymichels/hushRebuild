@@ -131,7 +131,9 @@ class ORAM:
     def extractLevelOne(self):
         # TODO: this can be done more efficiently if written in the same function
         # self.tightCompactionLevelOne()
-        # self.intersperseStashAndLevelOne()   
+        # self.intersperseStashAndLevelOne()  
+        hash_table_one = self.tables[0]
+        hash_table_one.is_built = False 
         local_RAM.BALL_READ += self.conf.BIN_SIZE
         local_RAM.RT_READ += 1
         local_RAM.BALL_WRITE += self.conf.BIN_SIZE

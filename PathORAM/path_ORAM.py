@@ -19,9 +19,15 @@ class PathORAM:
         if (self.conf.N/self.conf.X)*self.conf.BALL_SIZE  < self.conf.LOCAL_MEMORY_SIZE:
             self.position_map = CruchORAM(int(number_of_blocks/self.conf.X))
         else:
-            self.position_map = PathORAM(int(number_of_blocks/self.conf.X), allocate, True)
+            self.position_map = PathORAM(int(number_of_blocks/self.conf.X), allocate, False)
         if allocate:
             self.allocate_memory()
+    
+    def number_of_levels(self):
+        return self.position_map.number_of_levels() + 1
+    
+    def number_of_blocks_per_access(self):
+        return self.conf.NUMBER_OF_LEVELS*self.conf.Z + self.position_map.number_of_blocks_per_access()
     
     def allocate_memory(self):
         current_write = 0

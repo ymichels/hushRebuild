@@ -83,7 +83,7 @@ class HashTable:
         self.obliviousBallsIntoBins()
         self.cuckooHashOverflow()
         self.is_built = True
-        print('rebuilt layer: ', self.bins_ram.file_path)
+        # print('rebuilt layer: ', self.bins_ram.file_path)
         
     def binsTightCompaction(self, dummy_statuses = None):
         self.tightCompaction(self.conf.NUMBER_OF_BINS, self.bins_ram, dummy_statuses)

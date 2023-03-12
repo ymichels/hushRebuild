@@ -11,6 +11,12 @@ class CruchORAM:
         self.number_of_blocks = number_of_blocks
         self.conf = config(number_of_blocks)
         self.dic = {}
+    
+    def number_of_levels(self):
+        return 0
+        
+    def number_of_blocks_per_access(self):
+        return 0
 
     def position_map_access(self, key):
         old_leaf = random.randint(0,self.number_of_blocks*self.conf.X-1) if key not in self.dic else self.dic[key]

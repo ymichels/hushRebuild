@@ -21,15 +21,17 @@ import ctypes
 def path_ORAM_test(number_of_blocks):
 
     # real_ram = {}
-    path_oram = PathORAM(number_of_blocks,True)
+    path_oram = PathORAM(number_of_blocks,False)
+    print('rt:', path_oram.number_of_levels())
+    print('blocks read per access:', path_oram.number_of_blocks_per_access())
     # allocating memory shouldn't count as 'writing'...
-    reset_counters()
-    for i in range(number_of_blocks):
-        data = b'\x16'*path_oram.conf.BALL_DATA_SIZE
-        # real_ram[i] = data
-        path_oram.access('write',i,data)
-        if i % 1_000 == 0:
-            print(i,': ',len(path_oram.local_stash))
+    # reset_counters()
+    # for i in range(number_of_blocks):
+    #     data = b'\x16'*path_oram.conf.BALL_DATA_SIZE
+    #     # real_ram[i] = data
+    #     path_oram.access('write',i,data)
+    #     if i % 1_000 == 0:
+    #         print(i,': ',len(path_oram.local_stash))
 
     # for a 2N test...
     # for i in range(number_of_blocks):
@@ -60,17 +62,19 @@ def our_ORAM_test(oram_size, test_type, number_of_MB):
     for i in range(0,oram_size-1,oram.conf.MU):
         # read_ball = oram.access('read',random.randint(0,oram_size-1).to_bytes(oram.conf.KEY_SIZE,'big'))
         btc = oram.built_tables_count()
+        # print(btc)
         local_RAM.BALL_READ += 4*btc*oram.conf.MU
         local_RAM.RT_READ += 2*btc*oram.conf.MU
         local_RAM.BALL_WRITE += 4*btc*oram.conf.MU
         local_RAM.RT_WRITE += 2*btc*oram.conf.MU
         oram.rebuild()
-        if i % 10_000 == 0:
-            print('accesses: ',i)
+        # if i*oram.conf.MU % 10_000 == 0:
+        #     print('accesses: ',i)
+        if int(i/oram.conf.MU) % 100 == 0:
             print('fraction done: ',i/oram_size)
-            if i/oram_size > percent + 0.01:
-                percent += 0.01
-                print(percent)
+            # if i/oram_size > percent + 0.01:
+            #     percent += 0.01
+            #     print(percent)
                 # log_file = open('log-test-{}.size-{}MB'.format(test_type, number_of_MB),'w')
                 # log_file.write(str(percent))
                 # log_file.close()
