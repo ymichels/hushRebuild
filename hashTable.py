@@ -339,16 +339,16 @@ class HashTable:
         
         ### IF I WERE TO CONTINUE AND FINISH THE OBLIVIOUS SORT:
         # final shuffle and sort of each bin
-        local_RAM.BALL_READ += self.conf.NUMBER_OF_BINS_IN_OVERFLOW*self.conf.BIN_SIZE
-        local_RAM.RT_READ += self.conf.NUMBER_OF_BINS_IN_OVERFLOW 
-        local_RAM.BALL_WRITE += self.conf.NUMBER_OF_BINS_IN_OVERFLOW*self.conf.BIN_SIZE
-        local_RAM.RT_WRITE += self.conf.NUMBER_OF_BINS_IN_OVERFLOW 
+        # local_RAM.BALL_READ += self.conf.NUMBER_OF_BINS_IN_OVERFLOW*self.conf.BIN_SIZE
+        # local_RAM.RT_READ += self.conf.NUMBER_OF_BINS_IN_OVERFLOW 
+        # local_RAM.BALL_WRITE += self.conf.NUMBER_OF_BINS_IN_OVERFLOW*self.conf.BIN_SIZE
+        # local_RAM.RT_WRITE += self.conf.NUMBER_OF_BINS_IN_OVERFLOW 
         
-        # merge sort starting from the bin level:
-        local_RAM.RT_READ += 2*self.conf.NUMBER_OF_BINS_IN_OVERFLOW*math.ceil(math.log(self.conf.NUMBER_OF_BINS_IN_OVERFLOW,2))
-        local_RAM.RT_WRITE += 2*self.conf.NUMBER_OF_BINS_IN_OVERFLOW*math.ceil(math.log(self.conf.NUMBER_OF_BINS_IN_OVERFLOW,2))
-        local_RAM.BALL_READ += self.conf.NUMBER_OF_BINS_IN_OVERFLOW*math.ceil(math.log(self.conf.NUMBER_OF_BINS_IN_OVERFLOW,2))*self.conf.BIN_SIZE
-        local_RAM.BALL_WRITE += self.conf.NUMBER_OF_BINS_IN_OVERFLOW*math.ceil(math.log(self.conf.NUMBER_OF_BINS_IN_OVERFLOW,2))*self.conf.BIN_SIZE
+        # # merge sort starting from the bin level:
+        # local_RAM.RT_READ += 2*self.conf.NUMBER_OF_BINS_IN_OVERFLOW*math.ceil(math.log(self.conf.NUMBER_OF_BINS_IN_OVERFLOW,2))
+        # local_RAM.RT_WRITE += 2*self.conf.NUMBER_OF_BINS_IN_OVERFLOW*math.ceil(math.log(self.conf.NUMBER_OF_BINS_IN_OVERFLOW,2))
+        # local_RAM.BALL_READ += self.conf.NUMBER_OF_BINS_IN_OVERFLOW*math.ceil(math.log(self.conf.NUMBER_OF_BINS_IN_OVERFLOW,2))*self.conf.BIN_SIZE
+        # local_RAM.BALL_WRITE += self.conf.NUMBER_OF_BINS_IN_OVERFLOW*math.ceil(math.log(self.conf.NUMBER_OF_BINS_IN_OVERFLOW,2))*self.conf.BIN_SIZE
         
         
         ###
