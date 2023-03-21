@@ -577,9 +577,31 @@ class HashTable:
         
     
     def intersperse(self):
-        self.markAuxiliary(self.conf.N, 2*self.conf.N)
-        self.binsTightCompaction([self.conf.SECOND_DATA_STATUS, self.conf.SECOND_DUMMY_STATUS])
+        # Alternate intersperse:
+        offset = self.conf.NUMBER_OF_BINS
+        distance_from_center = 1
+        midLocation = int(self.conf.EPSILON*self.conf.N)*self.conf.BALL_SIZE
+        while offset >= 1:
+            offset /= 2
+            distance_from_center /=2
+        
+        while offset <= self.conf.NUMBER_OF_BINS:
+            start_loc = int(midLocation - midLocation*distance_from_center)
+            self._intersperse(start_loc, self.bins_ram, int(offset))
+            
+            offset *= 2
+            distance_from_center *=2
     
+    def _intersperse(self, start_loc, ram, offset):
+        for i in range(offset):
+            # balls = self.byte_operations.readTransposed(ram, offset, start_loc + i*self.conf.BALL_SIZE, 2*self.conf.MU)
+            # random.shuffle(balls)
+            # self.byte_operations.writeTransposed(ram, balls, offset, start_loc + i*self.conf.BALL_SIZE)
+            local_RAM.BALL_READ += 2*self.conf.MU
+            local_RAM.RT_READ += 1
+            local_RAM.BALL_WRITE += 2*self.conf.MU
+            local_RAM.RT_WRITE += 1
+        
     def markAuxiliary(self, ones, all):
         current_write = 0
         end_write = all*self.conf.BALL_SIZE
