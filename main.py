@@ -96,37 +96,41 @@ def ram_test(number_of_blocks):
 import cProfile
 import pstats
 from io import StringIO
+from utils.cuckoo_hash import CuckooHash
+for i in range(40_000):
+    print(i)
+    a = CuckooHash(conf=config(2**30))
+    a.insert_bulk(a.generate_random_memory(int(a.conf.MU/2)))
+# test_type = int(input('Enter test type:\n1) Our ORAM\n2) Path ORAM\n3) RAM\n'))
+# number_of_MB = int(input('How many MB should the test run?\n'))
+# number_of_blocks = int((number_of_MB*(2**20))/16)
+# pr = cProfile.Profile()
+# # log_file = open('log-test-{}.size-{}MB'.format(test_type, number_of_MB),'w')
+# pr.enable()
+# if test_type == 1:
+#     our_ORAM_test(number_of_blocks, test_type, number_of_MB)
+# elif test_type == 2:
+#     path_ORAM_test(number_of_blocks)
+# else:
+#     ram_test(number_of_blocks)
+# pr.disable()
+# s = StringIO()
+# sortby = 'time' #pstats.SortKey.CUMULATIVE
+# ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+# # stats = pstats.Stats(pr)
+# # stats.sort_stats(pstats.SortKey.TIME)
+# ps.dump_stats(filename='test-{}.size-{}MB.prof'.format(test_type, number_of_MB))
 
-test_type = int(input('Enter test type:\n1) Our ORAM\n2) Path ORAM\n3) RAM\n'))
-number_of_MB = int(input('How many MB should the test run?\n'))
-number_of_blocks = int((number_of_MB*(2**20))/16)
-pr = cProfile.Profile()
-# log_file = open('log-test-{}.size-{}MB'.format(test_type, number_of_MB),'w')
-pr.enable()
-if test_type == 1:
-    our_ORAM_test(number_of_blocks, test_type, number_of_MB)
-elif test_type == 2:
-    path_ORAM_test(number_of_blocks)
-else:
-    ram_test(number_of_blocks)
-pr.disable()
-s = StringIO()
-sortby = 'time' #pstats.SortKey.CUMULATIVE
-ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-# stats = pstats.Stats(pr)
-# stats.sort_stats(pstats.SortKey.TIME)
-ps.dump_stats(filename='test-{}.size-{}MB.prof'.format(test_type, number_of_MB))
-
-file = open('test-{}.size-{}MB'.format(test_type, number_of_MB),'w')
-file.write(
-    'accesses:{}\n'.format(number_of_blocks) +
-    'RAM.RT_WRITE:{}\n'.format(local_RAM.RT_WRITE) +
-    'RAM.RT_READ:{}\n'.format(local_RAM.RT_READ) +
-    'RAM.BALL_WRITE:{}\n'.format(local_RAM.BALL_WRITE) +
-    'RAM.BALL_READ:{}\n'.format(local_RAM.BALL_READ)
-)
+# file = open('test-{}.size-{}MB'.format(test_type, number_of_MB),'w')
+# file.write(
+#     'accesses:{}\n'.format(number_of_blocks) +
+#     'RAM.RT_WRITE:{}\n'.format(local_RAM.RT_WRITE) +
+#     'RAM.RT_READ:{}\n'.format(local_RAM.RT_READ) +
+#     'RAM.BALL_WRITE:{}\n'.format(local_RAM.BALL_WRITE) +
+#     'RAM.BALL_READ:{}\n'.format(local_RAM.BALL_READ)
+# )
 
 
-file.close()
+# file.close()
 
 

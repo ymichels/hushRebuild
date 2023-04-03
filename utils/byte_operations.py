@@ -2,7 +2,7 @@ from Cryptodome.Cipher import AES
 from RAM.local_RAM import local_RAM
 from config import config
 from operator import itemgetter
-
+import random
 
 class ByteOperations:
     def __init__(self,key, conf:config) -> None:
@@ -36,6 +36,7 @@ class ByteOperations:
         return capacity, threshold
         
     def ballToPseudoRandomNumber(self, ball,limit = -1):
+        # return random.randint(0,self.conf.MU-1)
         ball_key = ball[self.conf.BALL_STATUS_POSITION + 1:]
         return self.keyToPseudoRandomNumber(ball_key, limit)
         
@@ -45,6 +46,7 @@ class ByteOperations:
         enc = self.cipher.encrypt(key)
         if limit == -1:
             return int.from_bytes(enc, 'big', signed=False)
+        # print(int.from_bytes(enc, 'big', signed=False) % limit)
         return int.from_bytes(enc, 'big', signed=False) % limit
     
     def writeTransposed(self, ram: local_RAM, balls, offset, start):

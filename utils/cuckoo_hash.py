@@ -1,5 +1,5 @@
-from config import config
 import random
+from config import config
 from utils.byte_operations import ByteOperations
 
 class CuckooHash:
@@ -22,6 +22,8 @@ class CuckooHash:
                 continue
             self.insert_ball(ball)
         print('stash size: ', len(self.stash))
+        if len(self.stash) > 0:
+            raise 5
     
     def insert_ball(self,ball):
         seen_locations = []
@@ -51,3 +53,17 @@ class CuckooHash:
         table1_location = self.table1_byte_operations.keyToPseudoRandomNumber(key, self.conf.MU)
         table2_location = self.table2_byte_operations.keyToPseudoRandomNumber(key, self.conf.MU)
         return table1_location, table2_location
+    
+    def generate_empty_ball_with_key(self, key):
+        return self.empty_data + self.conf.DATA_STATUS + key.to_bytes(self.conf.KEY_SIZE, 'big')
+
+    def generate_random_memory(self, number_of_balls):
+        self.empty_data = self.conf.BALL_DATA_SIZE*self.conf.DUMMY_STATUS
+        self.memory = [self.generate_empty_ball_with_key(i) for i in range(number_of_balls)]
+        return self.memory
+    
+
+# for i in range(40_000):
+#     print(i)
+#     a = CuckooHash(conf=config(2**30))
+#     a.insert_bulk(a.generate_random_memory(int(a.conf.MU/1.25)))
