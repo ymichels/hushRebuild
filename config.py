@@ -81,7 +81,7 @@ class config(baseConfig):
         self.DATA_SIZE = self.N*self.BALL_SIZE
         self.OVERFLOW_SIZE = math.ceil(self.DATA_SIZE*self.EPSILON)
         self.NUMBER_OF_BINS_IN_OVERFLOW = 2**math.ceil(math.log(math.ceil(self.EPSILON*self.N/self.MU),2)) 
-        if self.NUMBER_OF_BINS_IN_OVERFLOW*self.MU <= 1.1 * self.EPSILON*self.N:
+        if self.NUMBER_OF_BINS_IN_OVERFLOW*self.MU <= self.CUCKOO_HASH_FILLAGE * self.EPSILON*self.N:
             self.NUMBER_OF_BINS_IN_OVERFLOW *=2
         
         self.FINAL = False
