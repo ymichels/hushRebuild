@@ -233,8 +233,6 @@ class HashTable:
             balls = self.data_ram.readChunks(
                 [(current_read_pos, current_read_pos + self.conf.LOCAL_MEMORY_SIZE)])
             
-            # this is to get rid of SECOND_DATA_STATUS from the intersperse stage
-            balls = self.byte_operations.removeSecondStatus(balls)
             
             self._ballsIntoBins(balls)
             current_read_pos += self.conf.LOCAL_MEMORY_SIZE
@@ -362,7 +360,7 @@ class HashTable:
         ball = self.local_stash.get(key)
         if ball != None:
             result_ball = ball
-            del self.local_stash[key]
+            self.local_stash[key] = self.byte_operations.changeBallStatus(self.local_stash[key], self.conf.SECOND_DUMMY_STATUS)
             self.reals_count -= 1
         
         table1_location, table2_location = self.cuckoo.get_possible_addresses(key)
@@ -376,17 +374,17 @@ class HashTable:
         ball_1_write = ''
         ball_2_write = ''
         # table 1
-        if ball_1[self.conf.BALL_STATUS_POSITION+1:] == key:
+        if ball_1[self.conf.BALL_STATUS_POSITION+1:] == key and ball_1[self.conf.BALL_STATUS_POSITION] == self.conf.DATA_STATUS:
             result_ball = ball_1
-            ball_1_write = replacement_ball
+            ball_1_write = ball_1[:self.conf.BALL_STATUS_POSITION] + self.conf.SECOND_DUMMY_STATUS + ball_1[self.conf.BALL_STATUS_POSITION+1:]
             self.reals_count -= 1
         else:
             ball_1_write = ball_1
         
         # table 2
-        if ball_2[self.conf.BALL_STATUS_POSITION+1:] == key:
+        if ball_2[self.conf.BALL_STATUS_POSITION+1:] == key and ball_1[self.conf.BALL_STATUS_POSITION] == self.conf.DATA_STATUS:
             result_ball = ball_2
-            ball_2_write = replacement_ball
+            ball_2_write = ball_2[:self.conf.BALL_STATUS_POSITION] + self.conf.SECOND_DUMMY_STATUS + ball_2[self.conf.BALL_STATUS_POSITION+1:]
             self.reals_count -= 1
         else:
             ball_2_write = ball_2
@@ -404,17 +402,17 @@ class HashTable:
 
 
         # table 1
-        if ball_1[self.conf.BALL_STATUS_POSITION+1:] == key:
+        if ball_1[self.conf.BALL_STATUS_POSITION+1:] == key and ball_1[self.conf.BALL_STATUS_POSITION] == self.conf.DATA_STATUS:
             result_ball = ball_1
-            ball_1_write = replacement_ball
+            ball_1_write = ball_1[:self.conf.BALL_STATUS_POSITION] + self.conf.SECOND_DUMMY_STATUS + ball_1[self.conf.BALL_STATUS_POSITION+1:]
             self.reals_count -= 1
         else:
             ball_1_write = ball_1
         
         # table 2
-        if ball_2[self.conf.BALL_STATUS_POSITION+1:] == key:
+        if ball_2[self.conf.BALL_STATUS_POSITION+1:] == key and ball_1[self.conf.BALL_STATUS_POSITION] == self.conf.DATA_STATUS:
             result_ball = ball_2
-            ball_2_write = replacement_ball
+            ball_2_write = ball_2[:self.conf.BALL_STATUS_POSITION] + self.conf.SECOND_DUMMY_STATUS + ball_2[self.conf.BALL_STATUS_POSITION+1:]
             self.reals_count -= 1
         else:
             ball_2_write = ball_2
@@ -429,92 +427,61 @@ class HashTable:
         while current_read_pos < self.conf.DATA_SIZE:
             balls = second_data_ram.readChunks(
                 [(current_read_pos, current_read_pos + self.conf.LOCAL_MEMORY_SIZE)])
-            balls = self.byte_operations.removeSecondStatus(balls)
             self.bins_ram.writeChunks(
                 [(self.conf.DATA_SIZE + current_read_pos, self.conf.DATA_SIZE + current_read_pos + self.conf.LOCAL_MEMORY_SIZE)], balls)
             current_read_pos += self.conf.LOCAL_MEMORY_SIZE
     
     
-    
+    # THIS NEEDS TO BE CHECKED
     def extract(self):
-        self.tightCompactionHideMixedStripe()
-        self.intersperseRD()
-    
-    def tightCompactionHideMixedStripe(self):
+        self.obliviousBallsIntoBinsExtract()
+        balls_written = 0
+        stash = list(self.local_stash.values())
         
-        # individual case of one bin
-        if self.conf.NUMBER_OF_BINS == 1:
-            balls = self.bins_ram.readChunks([(0,self.conf.BIN_SIZE_IN_BYTES)])
-            balls = self.localTightCompaction(balls, [self.conf.DUMMY_STATUS])
-            stash_balls = list(self.local_stash.values())
-            balls = balls[:self.conf.MU-len(stash_balls)] + stash_balls
-            self.bins_ram.writeChunks([(0,self.conf.MU * self.conf.BALL_SIZE)], balls)
+        for i in range(self.conf.NUMBER_OF_BINS_IN_OVERFLOW):
+            if balls_written == self.conf.N:
+                print('extract worked')
+                return
+            # read the overflow
+            overflow_bin = self.overflow_ram.readChunk((i*self.conf.BIN_SIZE_IN_BYTES,(i+1)*self.conf.BIN_SIZE_IN_BYTES))
+            for j in range(int(1/self.conf.EPSILON)):
+                # read the bin to extract
+                bin = self.bins_ram.readChunk(((i*int(1/self.conf.EPSILON)+j)*self.conf.BIN_SIZE_IN_BYTES,(i*int(1/self.conf.EPSILON)+j+1)*self.conf.BIN_SIZE_IN_BYTES))
+                for ball in overflow_bin + stash:
+                    if self.byte_operations.ballToPseudoRandomNumber(ball, self.conf.NUMBER_OF_BINS) == i*int(1/self.conf.EPSILON)+j:
+                        bin.append(ball)
+                bin = [ball for ball in bin if ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] != self.conf.DATA_STATUS]
+                self.bins_ram.writeChunk((balls_written*self.conf.BALL_SIZE,len(bin)*self.conf.BALL_SIZE), bin)
+                balls_written += len(bin)
+        
+        
+    
+    def obliviousBallsIntoBinsExtract(self):
+        if self.conf.NUMBER_OF_BINS_IN_OVERFLOW <= 1:
+            bin = self.overflow_ram.readChunk((0,self.conf.BIN_SIZE_IN_BYTES))
+            bin = self.localTightCompaction(bin,[self.conf.DUMMY_STATUS])
+            self.overflow_ram.writeChunk((0,self.conf.BIN_SIZE_IN_BYTES), bin)
             return
-        
-        self.copyOverflowToBins()
-        
-        number_of_bins = self.conf.NUMBER_OF_BINS + self.conf.NUMBER_OF_BINS_IN_OVERFLOW
-        mixed_stripe_write = 0
-        mixed_stripe_start, mixed_stripe_end = self.getMixedStripeLocation()
-        
-        for i in range(number_of_bins):
-            balls, mixed_indexes = self.byte_operations.readTransposedGetMixedStripeIndexes(self.bins_ram, number_of_bins, i*self.conf.BALL_SIZE, 2*self.conf.MU, mixed_stripe_start, mixed_stripe_end)
-            balls = self.localTightCompaction(balls, [self.conf.DUMMY_STATUS])
-            mixed_stripe = list(itemgetter(*mixed_indexes)(balls))
-            self.mixed_stripe_ram.writeChunks([(mixed_stripe_write, mixed_stripe_write + len(mixed_stripe)*self.conf.BALL_SIZE)],mixed_stripe)
-            mixed_stripe_write += len(mixed_stripe)*self.conf.BALL_SIZE
-            self.byte_operations.writeTransposed(self.bins_ram, balls, number_of_bins, i*self.conf.BALL_SIZE)
-        
-        self.tightCompaction(int(self.conf.NUMBER_OF_BINS/2), self.mixed_stripe_ram)
-        self.byte_operations.obliviousShiftData(self.mixed_stripe_ram, int(self.conf.NUMBER_OF_BINS/2), mixed_stripe_start)
-        
-        current_write = 0
-        while current_write < self.conf.DATA_SIZE*2:
-            stripe_balls = self.mixed_stripe_ram.readChunks([(current_write % (self.conf.N*self.conf.BALL_SIZE), (current_write % (self.conf.N*self.conf.BALL_SIZE)) + self.conf.BIN_SIZE_IN_BYTES)])
-            bins_balls = self.bins_ram.readChunks([(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)])
-            if current_write > mixed_stripe_end or current_write + self.conf.BIN_SIZE_IN_BYTES < mixed_stripe_start:
-                self.bins_ram.writeChunks([(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)],bins_balls)
-            elif current_write >= mixed_stripe_start and current_write + self.conf.BIN_SIZE_IN_BYTES <= mixed_stripe_end:
-                self.bins_ram.writeChunks([(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)], stripe_balls)
-            elif current_write < mixed_stripe_start and current_write + self.conf.BIN_SIZE_IN_BYTES >= mixed_stripe_start:
-                edge_balls = bins_balls[:int((mixed_stripe_start - current_write)/self.conf.BALL_SIZE)] + stripe_balls[int((mixed_stripe_start - current_write)/self.conf.BALL_SIZE):]
-                self.bins_ram.writeChunks([(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)], edge_balls)
-            elif current_write >= mixed_stripe_start and current_write + self.conf.BIN_SIZE_IN_BYTES >= mixed_stripe_end:
-                edge_balls = stripe_balls[:int((mixed_stripe_start - current_write)/self.conf.BALL_SIZE)] + bins_balls[int((mixed_stripe_start - current_write)/self.conf.BALL_SIZE):]
-                self.bins_ram.writeChunks([(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)], edge_balls)
-            current_write += self.conf.BIN_SIZE_IN_BYTES
-        
-       
-    def getMixedStripeLocation(self):
-        if self.reals_count < self.conf.N/2:
-            return 0, self.conf.N*self.conf.BALL_SIZE
-        return int((self.reals_count - self.conf.N/2)*self.conf.BALL_SIZE), int((self.reals_count + self.conf.N/2)*self.conf.BALL_SIZE)
-        
-    def copyOverflowToBins(self):
-        current_read_pos = 0
-        
-        while current_read_pos < self.conf.NUMBER_OF_BINS_IN_OVERFLOW*self.conf.BIN_SIZE_IN_BYTES:
-            balls = self.overflow_ram.readChunks(
-                [(current_read_pos, current_read_pos + self.conf.LOCAL_MEMORY_SIZE)])
-            self.overflow_ram.writeChunks([(current_read_pos, current_read_pos + self.conf.LOCAL_MEMORY_SIZE)],self.dummy_bin)
-            self.reset_overflow_statuses(balls)
-            self.bins_ram.writeChunks(
-                [(self.conf.DATA_SIZE*2 + current_read_pos, self.conf.DATA_SIZE*2 + current_read_pos + self.conf.LOCAL_MEMORY_SIZE)], balls)
-            current_read_pos += self.conf.LOCAL_MEMORY_SIZE
-    
-    
-    def reset_overflow_statuses(self, balls):
-        stash_inserted = 0
-        for i,ball in enumerate(balls):
-            status = ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] 
-            if status == self.conf.STASH_DATA_STATUS:
-                balls[i] = self.byte_operations.changeBallStatus(ball, self.conf.DATA_STATUS)
-            elif status == self.conf.STASH_DUMMY_STATUS:
-                balls[i] = self.byte_operations.changeBallStatus(ball, self.conf.DUMMY_STATUS)
-            if status == self.conf.DUMMY_STATUS and stash_inserted < self.conf.STASH_SIZE and len(self.local_stash) != 0:
-                balls[i] = list(self.local_stash.items())[0][1]
-                del self.local_stash[list(self.local_stash.items())[0][0]]
-        
+        oblivious_sort = ObliviousSort(self.conf)
+        # self._obliviousBallsIntoBinsFirstIteration(oblivious_sort)
+        # next_ram = self.overflow_ram
+        # current_ram = self.second_overflow_ram
+        for bit_num in range(0,math.ceil(math.log(self.conf.NUMBER_OF_BINS_IN_OVERFLOW,2))):
+            first_bin_index = 0
+            for bin_index in range(math.ceil(self.conf.NUMBER_OF_BINS_IN_OVERFLOW/2)):
+                first_bin = current_ram.readChunks([(first_bin_index*self.conf.BIN_SIZE_IN_BYTES, (first_bin_index + 1)*self.conf.BIN_SIZE_IN_BYTES)])
+                second_bin = current_ram.readChunks([
+                    ((first_bin_index + 2**bit_num)*self.conf.BIN_SIZE_IN_BYTES, (first_bin_index + (2**bit_num) + 1)*self.conf.BIN_SIZE_IN_BYTES)])
+                bin_zero, bin_one = oblivious_sort.splitToBinsByBitExtract(first_bin + second_bin,math.ceil(math.log(self.conf.NUMBER_OF_BINS_IN_OVERFLOW,2)) - 1 - bit_num, self.conf.NUMBER_OF_BINS, self.conf.EPSILON)
+                
+                next_ram.writeChunks(
+                    [(bin_index*2*self.conf.BIN_SIZE_IN_BYTES, (bin_index +1)*2*self.conf.BIN_SIZE_IN_BYTES)], bin_zero + bin_one)
+                first_bin_index +=1
+                if first_bin_index % 2**bit_num == 0:
+                    first_bin_index += 2**bit_num
+            next_ram, current_ram = current_ram, next_ram
+        self.overflow_ram = current_ram
+        self.second_overflow_ram = next_ram
     
 # self.markAuxiliary(self.conf.N, 2*self.conf.N)
 # self.binsTightCompaction([self.conf.SECOND_DATA_STATUS, self.conf.SECOND_DUMMY_STATUS])
@@ -539,24 +506,4 @@ class HashTable:
             balls = self.byte_operations.readTransposed(ram, offset, start_loc + i*self.conf.BALL_SIZE, 2*self.conf.MU)
             random.shuffle(balls)
             self.byte_operations.writeTransposed(ram, balls, offset, start_loc + i*self.conf.BALL_SIZE)
-        
-        
     
-    def markAuxiliary(self, ones, all):
-        current_write = 0
-        end_write = all*self.conf.BALL_SIZE
-        while current_write < end_write:
-            bin = self.bins_ram.readChunks([(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)])
-            for i,ball in enumerate(bin):
-                assignment = random.uniform(0, 1) < ones/all
-                if assignment:
-                    bin[i] = self.byte_operations.switchToSecondStatus(ball)
-                    ones -= 1
-                all -= 1
-            self.bins_ram.writeChunks([(current_write, current_write + self.conf.BIN_SIZE_IN_BYTES)], bin)
-            current_write += self.conf.BIN_SIZE_IN_BYTES
-    
-    
-    def intersperseRD(self):
-        self.markAuxiliary(self.reals_count, self.conf.N)
-        self.tightCompaction(int(self.conf.NUMBER_OF_BINS/2), self.bins_ram, [self.conf.SECOND_DATA_STATUS, self.conf.SECOND_DUMMY_STATUS])

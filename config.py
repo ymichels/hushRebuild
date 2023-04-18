@@ -50,12 +50,9 @@ class config(baseConfig):
     
     DUMMY_STATUS = b'\x00'
     DATA_STATUS = b'\x01'
-    STASH_DATA_STATUS = b'\x02'
-    STASH_DUMMY_STATUS = b'\x03'
     
-    # we require a second data status for perposes of intersperse
-    SECOND_DATA_STATUS = b'\x04'
-    SECOND_DUMMY_STATUS = b'\x05'
+    # we require a second dummy status for when we read a thing
+    SECOND_DUMMY_STATUS = b'\x02'
     
     def __init__(self, N=None):
         if N == None:

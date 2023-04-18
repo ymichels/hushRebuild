@@ -84,31 +84,6 @@ class ByteOperations:
         for i in range(number_of_bins):
             balls = self.readTransposedAndShifted(ram, number_of_bins, i*self.conf.BALL_SIZE, 2*self.conf.MU, shift_position)
             self.writeTransposed(ram, balls, number_of_bins, i*self.conf.BALL_SIZE)
-    
-    def removeSecondStatus(self, balls):
-        result = []
-        for ball in balls:
-            if ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] in [self.conf.SECOND_DUMMY_STATUS, self.conf.DUMMY_STATUS] and self.conf.FINAL:
-                continue
-            elif ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] == self.conf.SECOND_DATA_STATUS:
-                result.append(self.changeBallStatus(ball, self.conf.DATA_STATUS))
-            elif ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] == self.conf.SECOND_DUMMY_STATUS:
-                result.append(self.changeBallStatus(ball, self.conf.DUMMY_STATUS))
-            elif ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] == self.conf.STASH_DATA_STATUS:
-                result.append(self.changeBallStatus(ball, self.conf.DATA_STATUS))
-            elif ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] == self.conf.STASH_DUMMY_STATUS:
-                result.append(self.changeBallStatus(ball, self.conf.DUMMY_STATUS))
-            else:    
-                result.append(ball)
-        return result
-    
-    def switchToSecondStatus(self, ball):
-        if ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] == self.conf.DATA_STATUS:
-            return self.changeBallStatus(ball, self.conf.SECOND_DATA_STATUS)
-        elif ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] == self.conf.DUMMY_STATUS:
-            return self.changeBallStatus(ball, self.conf.SECOND_DUMMY_STATUS)
-        else:
-            return ball
      
     def changeBallsStatus(self, balls, status):
         return [self.changeBallStatus(ball, status) for ball in balls]
