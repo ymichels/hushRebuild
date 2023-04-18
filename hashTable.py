@@ -95,12 +95,43 @@ class HashTable:
         distance_from_center = 1
         midLocation = int(self.conf.EPSILON*self.conf.N)*self.conf.BALL_SIZE
         
+        iteration = 1
         while offset >= 1:
             start_loc = int(midLocation - midLocation*distance_from_center)
+            if iteration >= self.conf.RAND_CYCLIC_SHIFT_ITERATION:
+                self.randCyclicShift(int(offset), start_loc, ram)
             self._tightCompaction(start_loc, ram, int(offset), dummy_statuses)
             
             offset /= 2
             distance_from_center /=2
+            iteration += 1
+    
+    def randCyclicShift(self, NUMBER_OF_BINS, start_loc, ram: local_RAM):
+        if NUMBER_OF_BINS == 1:
+            return
+        if NUMBER_OF_BINS <= 2*self.conf.MU:
+            current_read = start_loc
+            while current_read <= start_loc + NUMBER_OF_BINS*self.conf.BIN_SIZE_IN_BYTES:
+                number_of_shifts = int(2*self.conf.MU/NUMBER_OF_BINS)
+                balls = ram.readChunk((current_read, current_read + number_of_shifts*NUMBER_OF_BINS*self.conf.BALL_SIZE))
+                shift_amounts = [random.randint(0, NUMBER_OF_BINS) for _ in range(number_of_shifts)]
+                shifted_balls = []
+                start_index = 0
+                for i in range(number_of_shifts):
+                    shift_amount = shift_amounts[i]
+                    end_index = start_index + NUMBER_OF_BINS
+                    section = balls[start_index:end_index]
+                    shifted_section = section[shift_amount:] + section[:shift_amount]
+                    shifted_balls.extend(shifted_section)
+                    start_index = end_index
+                
+                ram.writeChunk((current_read, current_read + number_of_shifts*NUMBER_OF_BINS*self.conf.BALL_SIZE),shifted_balls)
+                current_read += number_of_shifts*NUMBER_OF_BINS*self.conf.BALL_SIZE
+        else:
+            raise NotImplementedError('this is not implemented yet.')
+                
+                
+        
     
     def _tightCompaction(self, start_loc, ram, offset, dummy_statuses):
         for i in range(offset):
@@ -265,24 +296,14 @@ class HashTable:
             self.bins_ram.writeChunks([(current_bin_index*self.conf.BIN_SIZE_IN_BYTES, (current_bin_index +1)*self.conf.BIN_SIZE_IN_BYTES )],hash_tables)
             
             # write the stash
-            dummies = [get_random_string(self.conf.BALL_SIZE, self.conf.BALL_STATUS_POSITION,self.conf.STASH_DUMMY_STATUS) for i in range(self.conf.STASH_SIZE - len(cuckoo_hash.stash))]
-            stashes += cuckoo_hash.stash + dummies
-            if len(stashes) + self.conf.STASH_SIZE >= self.conf.BIN_SIZE:
-                stashes = stashes + self.createDummies(self.conf.BIN_SIZE - len(stashes))
-                self.overflow_ram.writeChunks([(self.conf.OVERFLOW_SIZE + overflow_written*self.conf.BIN_SIZE_IN_BYTES, self.conf.OVERFLOW_SIZE + (overflow_written +1)*self.conf.BIN_SIZE_IN_BYTES )],stashes)
-                stashes = []
-                overflow_written += 1
+            self.addToLocalStash(cuckoo_hash.stash)
             current_bin_index += 1
-        self.overflow_ram.writeChunks([(self.conf.OVERFLOW_SIZE + overflow_written*self.conf.BIN_SIZE_IN_BYTES, self.conf.OVERFLOW_SIZE + overflow_written*self.conf.BIN_SIZE_IN_BYTES + len(stashes) )],stashes)
-        overflow_written += 1
         
-        self.updateOverflowConfigs(overflow_written)
-    
-    def updateOverflowConfigs(self, num_of_added_bins):
-        self.conf.NUMBER_OF_BINS_IN_OVERFLOW = 2**math.ceil(math.log(self.conf.NUMBER_OF_BINS_IN_OVERFLOW + math.ceil((num_of_added_bins*self.conf.BIN_SIZE)/self.conf.MU),2))
-        self.conf.OVERFLOW_SIZE += num_of_added_bins*self.conf.BIN_SIZE
+
         
     def obliviousBallsIntoBins(self):
+        if self.conf.NUMBER_OF_BINS_IN_OVERFLOW <= 1:
+            return
         oblivious_sort = ObliviousSort(self.conf)
         self._obliviousBallsIntoBinsFirstIteration(oblivious_sort)
         next_ram = self.overflow_ram

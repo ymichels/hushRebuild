@@ -29,7 +29,9 @@ class config(baseConfig):
     DATA_SIZE = N*BALL_SIZE
     OVERFLOW_SIZE = math.ceil(DATA_SIZE*EPSILON)
     LOCAL_MEMORY_SIZE = BIN_SIZE_IN_BYTES
-    NUMBER_OF_BINS_IN_OVERFLOW = math.ceil(EPSILON*N/MU)
+    NUMBER_OF_BINS_IN_OVERFLOW = 2**math.ceil(math.log(math.ceil(EPSILON*N/MU),2)) 
+    RAND_CYCLIC_SHIFT_ITERATION = 7
+    CUCKOO_HASH_FILLAGE = 1.1
 
     DATA_LOCATION = 'data.txt'
     BINS_LOCATION = 'bins.txt'
@@ -40,6 +42,7 @@ class config(baseConfig):
     
     
     MIXED_STRIPE_LOCATION = 'mixed_stripe.txt'
+    RAND_CYCLIC_SHIFT_LOCATION = 'rand_cyclic_shift.txt'
 
     MAIN_KEY = b'Sixteen byte key'
     CUCKOO_HASH_KEY_1 = b'Cuckoo hash key1'
@@ -77,7 +80,9 @@ class config(baseConfig):
         self.NUMBER_OF_BINS = math.ceil(self.N/self.MU)
         self.DATA_SIZE = self.N*self.BALL_SIZE
         self.OVERFLOW_SIZE = math.ceil(self.DATA_SIZE*self.EPSILON)
-        self.NUMBER_OF_BINS_IN_OVERFLOW = math.ceil(self.EPSILON*self.N/self.MU)
+        self.NUMBER_OF_BINS_IN_OVERFLOW = 2**math.ceil(math.log(math.ceil(self.EPSILON*self.N/self.MU),2)) 
+        if self.NUMBER_OF_BINS_IN_OVERFLOW*self.MU <= self.CUCKOO_HASH_FILLAGE * self.EPSILON*self.N:
+            self.NUMBER_OF_BINS_IN_OVERFLOW *=2
         self.FINAL = False
         
         
