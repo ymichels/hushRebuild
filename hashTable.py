@@ -111,6 +111,13 @@ class HashTable:
             # self.byte_operations.writeTransposed(ram, balls, offset, start_loc + i*self.conf.BALL_SIZE)
             local_RAM.BALL_WRITE += 2*self.conf.MU
             local_RAM.RT_WRITE += 1
+            
+            ######### additions for randCyclicShift
+            # for every bin I need to copy it to a different location and then copy back:
+            local_RAM.BALL_READ += 4*self.conf.MU
+            local_RAM.RT_READ += 2
+            local_RAM.BALL_WRITE += 4*self.conf.MU
+            local_RAM.RT_WRITE += 2
         
     def localTightCompaction(self, balls, dummy_statuses):
         dummies = []
