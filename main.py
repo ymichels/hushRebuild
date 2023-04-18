@@ -57,8 +57,8 @@ def our_ORAM_test(oram_size, test_type, number_of_MB):
     # allocating memory shouldn't count as 'writing'...
     reset_counters()
     oram.initial_build('testing_data.txt')
-    for i in range(oram_size-1):
-        read_ball = oram.access('read',random.randint(0,oram_size-1).to_bytes(oram.conf.KEY_SIZE,'big'))
+    for i in range(int(oram_size/2)-1):
+        oram.access('write',int(i).to_bytes(oram.conf.KEY_SIZE,'big'),int(i+3).to_bytes(oram.conf.BALL_DATA_SIZE,'big'))
         if i % 10_000 == 0:
             print('accesses: ',i)
             print('fraction done: ',i/oram_size)
@@ -67,6 +67,23 @@ def our_ORAM_test(oram_size, test_type, number_of_MB):
                 log_file = open('log-test-{}.size-{}MB'.format(test_type, number_of_MB),'w')
                 log_file.write(str(percent))
                 log_file.close()
+    
+    for i in range(int(oram_size/2)-1):
+        read_ball = oram.access('read',int(i).to_bytes(oram.conf.KEY_SIZE,'big'))
+        value = int.from_bytes(read_ball[:oram.conf.BALL_STATUS_POSITION], 'big', signed=False)
+        if value != i+3 and value != 0:
+            print('no good!')
+        if i % 10_000 == 0:
+            print('accesses: ',i)
+            print('fraction done: ',i/oram_size)
+            if i/oram_size > percent + 0.01:
+                percent += 0.01
+                log_file = open('log-test-{}.size-{}MB'.format(test_type, number_of_MB),'w')
+                log_file.write(str(percent))
+                log_file.close()
+            
+            
+            
 
     
     print('RAM.RT_WRITE: ', local_RAM.RT_WRITE)
