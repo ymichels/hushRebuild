@@ -18,7 +18,8 @@ class config(baseConfig):
     BALL_STATUS_POSITION = BALL_DATA_SIZE
     BALL_SIZE = BALL_DATA_SIZE + 1 + KEY_SIZE
     LOG_LAMBDA = 9
-    MU = 30*LOG_LAMBDA**3
+    Z = 2*30*LOG_LAMBDA**3
+    MU = int(Z/2)
     NUMBER_OF_BINS = math.ceil(N/MU)
     BIN_SIZE = 2*MU
     BIN_SIZE_IN_BYTES = BIN_SIZE*BALL_SIZE
@@ -29,8 +30,10 @@ class config(baseConfig):
     DATA_SIZE = N*BALL_SIZE
     OVERFLOW_SIZE = math.ceil(DATA_SIZE*EPSILON)
     LOCAL_MEMORY_SIZE = BIN_SIZE_IN_BYTES
-    NUMBER_OF_BINS_IN_OVERFLOW = math.ceil(EPSILON*N/MU)
-
+    NUMBER_OF_BINS_IN_OVERFLOW = 2**math.ceil(math.log(math.ceil(EPSILON*N/MU),2)) 
+    RAND_CYCLIC_SHIFT_ITERATION = 7
+    CUCKOO_HASH_FILLAGE = 1.1
+    
     DATA_LOCATION = 'data.txt'
     BINS_LOCATION = 'bins.txt'
     OVERFLOW_LOCATION = 'overflow.txt'
@@ -77,7 +80,10 @@ class config(baseConfig):
         self.NUMBER_OF_BINS = math.ceil(self.N/self.MU)
         self.DATA_SIZE = self.N*self.BALL_SIZE
         self.OVERFLOW_SIZE = math.ceil(self.DATA_SIZE*self.EPSILON)
-        self.NUMBER_OF_BINS_IN_OVERFLOW = math.ceil(self.EPSILON*self.N/self.MU)
+        self.NUMBER_OF_BINS_IN_OVERFLOW = 2**math.ceil(math.log(math.ceil(self.EPSILON*self.N/self.MU),2)) 
+        if self.NUMBER_OF_BINS_IN_OVERFLOW*self.MU <= 1.1 * self.EPSILON*self.N:
+            self.NUMBER_OF_BINS_IN_OVERFLOW *=2
+        
         self.FINAL = False
         
         
