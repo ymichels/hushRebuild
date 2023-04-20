@@ -22,8 +22,8 @@ def path_ORAM_test(number_of_blocks):
 
     # real_ram = {}
     path_oram = PathORAM(number_of_blocks,False)
-    print('rt:', path_oram.number_of_levels())
-    print('blocks read per access:', path_oram.number_of_blocks_per_access())
+    print('rt:', 2*path_oram.number_of_levels())
+    print('blocks read per access:', 2*path_oram.number_of_blocks_per_access())
     # allocating memory shouldn't count as 'writing'...
     # reset_counters()
     # for i in range(number_of_blocks):
@@ -42,11 +42,11 @@ def path_ORAM_test(number_of_blocks):
         # if oram_ans != real_ram[key]:
         #     raise 'ERROR!'
     
-    print('RAM.RT_WRITE: ', local_RAM.RT_WRITE)
-    print('RAM.RT_READ: ', local_RAM.RT_READ)
-    print('RAM.BALL_WRITE: ', local_RAM.BALL_WRITE)
-    print('RAM.BALL_READ: ', local_RAM.BALL_READ)
-    print('done!')
+    # print('RAM.RT_WRITE: ', local_RAM.RT_WRITE)
+    # print('RAM.RT_READ: ', local_RAM.RT_READ)
+    # print('RAM.BALL_WRITE: ', local_RAM.BALL_WRITE)
+    # print('RAM.BALL_READ: ', local_RAM.BALL_READ)
+    # print('done!')
     
     
     
@@ -139,5 +139,15 @@ file.write(
 
 
 file.close()
+################################
+if test_type == 1:
+    print('66666666666666666666666666666666666666666666666666')
+    print('accesses: ', number_of_blocks) 
+    print('RAM.RT_WRITE: ', local_RAM.RT_WRITE) 
+    print('RAM.RT_READ: ', local_RAM.RT_READ) 
+    print('RAM.BALL_WRITE: ', local_RAM.BALL_WRITE) 
+    print('RAM.BALL_READ: ', local_RAM.BALL_READ)
+else:
+    4
 
 

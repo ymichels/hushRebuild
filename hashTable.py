@@ -119,9 +119,9 @@ class HashTable:
             ######### additions for randCyclicShift
             # for every bin I need to copy it to a different location and then copy back:
             if rand_cyclic_shift:
-                local_RAM.BALL_READ += 4*self.conf.MU
+                local_RAM.BALL_READ += 2*self.conf.MU
                 local_RAM.RT_READ += 2
-                local_RAM.BALL_WRITE += 4*self.conf.MU
+                local_RAM.BALL_WRITE += 2*self.conf.MU
                 local_RAM.RT_WRITE += 2
         
     def localTightCompaction(self, balls, dummy_statuses):
@@ -296,7 +296,7 @@ class HashTable:
             # write the data
             # hash_tables = cuckoo_hash.table1 + cuckoo_hash.table2
             # self.bins_ram.writeChunks([(current_bin_index*self.conf.BIN_SIZE_IN_BYTES, (current_bin_index +1)*self.conf.BIN_SIZE_IN_BYTES )],hash_tables)
-            local_RAM.BALL_WRITE += 2*self.conf.BIN_SIZE
+            local_RAM.BALL_WRITE += self.conf.BIN_SIZE
             local_RAM.RT_WRITE += 1
             # write the stash
             # dummies = [get_random_string(self.conf.BALL_SIZE, self.conf.BALL_STATUS_POSITION,self.conf.STASH_DUMMY_STATUS) for i in range(self.conf.STASH_SIZE - len(cuckoo_hash.stash))]
@@ -363,8 +363,8 @@ class HashTable:
         current_read_pos = 0
         for bin_index in range(math.ceil(self.conf.NUMBER_OF_BINS_IN_OVERFLOW/2)):
             # balls = self.overflow_ram.readChunks([(current_read_pos, current_read_pos + self.conf.BIN_SIZE_IN_BYTES)])
-            local_RAM.BALL_WRITE += self.conf.BIN_SIZE
-            local_RAM.RT_WRITE += 1
+            local_RAM.BALL_READ += self.conf.BIN_SIZE
+            local_RAM.RT_READ += 1
             # bin_zero, bin_one = oblivious_sort.splitToBinsByBit(balls, math.ceil(math.log(self.conf.NUMBER_OF_BINS_IN_OVERFLOW,2))-1, self.conf.NUMBER_OF_BINS_IN_OVERFLOW)
             # self.second_overflow_ram.writeChunks(
             #     [(2*current_read_pos, 2*current_read_pos + 2*self.conf.BIN_SIZE_IN_BYTES)], bin_zero + bin_one)
@@ -490,7 +490,7 @@ class HashTable:
                 # extract 1/epsilon major bins
                 local_RAM.BALL_READ += self.conf.BIN_SIZE
                 local_RAM.RT_READ += 1
-                local_RAM.BALL_WRITE += self.conf.MU # I'm only writing the extracted (the reals and the dumies added due to reals)
+                local_RAM.BALL_WRITE += self.conf.MU # I'm only writing the extracted (the reals and the dummies added due to reads)
                 local_RAM.RT_WRITE += 1
         
     

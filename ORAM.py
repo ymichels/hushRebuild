@@ -124,6 +124,7 @@ class ORAM:
         final_table = self.tables[-1]
         
         # for purposes of efficiency, in the final build - the write locations switch...
+        print('final build')
         final_table.conf.FINAL = True
         final_table.binsTightCompaction([final_table.conf.DUMMY_STATUS, final_table.conf.SECOND_DUMMY_STATUS])
         final_table.rebuild(final_table.conf.N)
