@@ -374,17 +374,18 @@ class HashTable:
         ball_1_write = ''
         ball_2_write = ''
         # table 1
-        if ball_1[self.conf.BALL_STATUS_POSITION+1:] == key and ball_1[self.conf.BALL_STATUS_POSITION] == self.conf.DATA_STATUS:
+        if ball_1[self.conf.BALL_STATUS_POSITION+1:] == key and ball_1[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] == self.conf.DATA_STATUS:
             result_ball = ball_1
-            ball_1_write = ball_1[:self.conf.BALL_STATUS_POSITION] + self.conf.SECOND_DUMMY_STATUS + ball_1[self.conf.BALL_STATUS_POSITION+1:]
+            ball_1_write = ball_1[:self.conf.BALL_STATUS_POSITION] + self.conf.SECOND_DUMMY_STATUS + random.randint(2**27,2**28).to_bytes(self.conf.KEY_SIZE,'big')
             self.reals_count -= 1
         else:
             ball_1_write = ball_1
         
         # table 2
-        if ball_2[self.conf.BALL_STATUS_POSITION+1:] == key and ball_1[self.conf.BALL_STATUS_POSITION] == self.conf.DATA_STATUS:
+        if ball_2[self.conf.BALL_STATUS_POSITION+1:] == key and ball_2[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1]== self.conf.DATA_STATUS:
             result_ball = ball_2
-            ball_2_write = ball_2[:self.conf.BALL_STATUS_POSITION] + self.conf.SECOND_DUMMY_STATUS + ball_2[self.conf.BALL_STATUS_POSITION+1:]
+            ### RANDOM KEY NOT SAME KEY
+            ball_2_write = ball_2[:self.conf.BALL_STATUS_POSITION] + self.conf.SECOND_DUMMY_STATUS + random.randint(2**27,2**28).to_bytes(self.conf.KEY_SIZE,'big')
             self.reals_count -= 1
         else:
             ball_2_write = ball_2
@@ -402,17 +403,17 @@ class HashTable:
 
 
         # table 1
-        if ball_1[self.conf.BALL_STATUS_POSITION+1:] == key and ball_1[self.conf.BALL_STATUS_POSITION] == self.conf.DATA_STATUS:
+        if ball_1[self.conf.BALL_STATUS_POSITION+1:] == key and ball_1[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] == self.conf.DATA_STATUS:
             result_ball = ball_1
-            ball_1_write = ball_1[:self.conf.BALL_STATUS_POSITION] + self.conf.SECOND_DUMMY_STATUS + ball_1[self.conf.BALL_STATUS_POSITION+1:]
+            ball_1_write = ball_1[:self.conf.BALL_STATUS_POSITION] + self.conf.SECOND_DUMMY_STATUS + random.randint(2**27,2**28).to_bytes(self.conf.KEY_SIZE,'big')
             self.reals_count -= 1
         else:
             ball_1_write = ball_1
         
         # table 2
-        if ball_2[self.conf.BALL_STATUS_POSITION+1:] == key and ball_1[self.conf.BALL_STATUS_POSITION] == self.conf.DATA_STATUS:
+        if ball_2[self.conf.BALL_STATUS_POSITION+1:] == key and ball_2[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] == self.conf.DATA_STATUS:
             result_ball = ball_2
-            ball_2_write = ball_2[:self.conf.BALL_STATUS_POSITION] + self.conf.SECOND_DUMMY_STATUS + ball_2[self.conf.BALL_STATUS_POSITION+1:]
+            ball_2_write = ball_2[:self.conf.BALL_STATUS_POSITION] + self.conf.SECOND_DUMMY_STATUS + random.randint(2**27,2**28).to_bytes(self.conf.KEY_SIZE,'big')
             self.reals_count -= 1
         else:
             ball_2_write = ball_2
@@ -434,14 +435,12 @@ class HashTable:
     
     # THIS NEEDS TO BE CHECKED
     def extract(self):
+        5+ 5
         self.obliviousBallsIntoBinsExtract()
         balls_written = 0
         stash = list(self.local_stash.values())
         
         for i in range(self.conf.NUMBER_OF_BINS_IN_OVERFLOW):
-            if balls_written == self.conf.N:
-                print('extract worked')
-                return
             # read the overflow
             overflow_bin = self.overflow_ram.readChunk((i*self.conf.BIN_SIZE_IN_BYTES,(i+1)*self.conf.BIN_SIZE_IN_BYTES))
             for j in range(int(1/self.conf.EPSILON)):
@@ -450,9 +449,14 @@ class HashTable:
                 for ball in overflow_bin + stash:
                     if self.byte_operations.ballToPseudoRandomNumber(ball, self.conf.NUMBER_OF_BINS) == i*int(1/self.conf.EPSILON)+j:
                         bin.append(ball)
-                bin = [ball for ball in bin if ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] != self.conf.DATA_STATUS]
+                bin = [ball for ball in bin if ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] != self.conf.DUMMY_STATUS]
                 self.bins_ram.writeChunk((balls_written*self.conf.BALL_SIZE,len(bin)*self.conf.BALL_SIZE), bin)
                 balls_written += len(bin)
+                if balls_written == self.conf.N:
+                    print('extract worked')
+                    return
+        print('balls_written:',balls_written)
+        print('self.conf.N:',self.conf.N)
         
         
     

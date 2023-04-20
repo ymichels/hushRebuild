@@ -15,15 +15,21 @@ class CuckooHash:
         self.table2 = self.createDummies(self.conf.MU)
         self.stash = []
 
-    def insert_bulk(self,balls):
+    # Level one has no overflow-pile which raises the stash-size 
+    # but it's ok because it's bounded by MU and therefore would not blow-up the local memory
+    def insert_bulk(self, balls, stash_is_ok = False):
         random.shuffle(balls)
         for ball in balls:
             if ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION+1] == self.conf.DUMMY_STATUS:
                 continue
-            self.insert_ball(ball)
-        print('stash size: ', len(self.stash))
+            self.insert_ball(ball, stash_is_ok)
+            
+        if stash_is_ok and len(self.stash) > 0:
+            print('stash size: ', len(self.stash), 'but it\'s ok')
+        else:
+            print('stash size: ', len(self.stash))
     
-    def insert_ball(self,ball):
+    def insert_ball(self, ball, stash_is_ok = False):
         seen_locations = []
         while True:
             location = self.table1_byte_operations.ballToPseudoRandomNumber(ball,self.conf.MU)
@@ -39,7 +45,9 @@ class CuckooHash:
                 break
             ball = evicted_ball
             if len(seen_locations) > 2*self.conf.MU:
-                if ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION+1] == self.conf.DATA_STATUS:
+                if not stash_is_ok:
+                    print('hey! this should be unlikely ~(1/MU)')
+                if ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION+1] != self.conf.DUMMY_STATUS:
                     self.stash.append(ball)
                     if len(self.stash) > self.conf.STASH_SIZE:
                         raise Exception("Error, Cuckoo hash stash is full")

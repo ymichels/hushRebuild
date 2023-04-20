@@ -52,6 +52,8 @@ class ORAM:
         ball = self.local_stash.get(key)
         if ball != None:
             is_found = True
+            dummy_key = random.randint(2**27,2**28).to_bytes(self.conf.KEY_SIZE,'big')
+            self.local_stash[dummy_key] = dummy_key + self.conf.SECOND_DUMMY_STATUS + dummy_key
             key = get_random_string(self.conf.BALL_SIZE - self.conf.BALL_STATUS_POSITION -1)
         
         # search tables
@@ -122,9 +124,14 @@ class ORAM:
         final_table.rebuild(final_table.conf.N)
     
     def extractLevelOne(self):
-        # TODO: this can be done more efficiently if written in the same function
-        self.tightCompactionLevelOne()
-        self.intersperseStashAndLevelOne()   
+        hash_table_one = self.tables[0]
+        balls = hash_table_one.bins_ram.readChunk((0,self.conf.BIN_SIZE_IN_BYTES))
+        balls.extend(list(hash_table_one.local_stash.values()))
+        balls.extend(self.local_stash.values())
+        balls = [ball for ball in balls if ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] != self.conf.DUMMY_STATUS]
+        random.shuffle(balls)
+        hash_table_one.bins_ram.writeChunk((0,self.conf.BIN_SIZE_IN_BYTES),balls)
+        hash_table_one.is_built = False
         
     def tightCompactionLevelOne(self):
         hash_table_one = self.tables[0]
@@ -132,6 +139,7 @@ class ORAM:
         balls = hash_table_one.localTightCompaction(balls, [self.conf.DUMMY_STATUS])
         stash_balls = list(hash_table_one.local_stash.values())
         balls = balls[:self.conf.MU-len(stash_balls)] + stash_balls
+        random.shuffle(balls)
         hash_table_one.bins_ram.writeChunks([(0,hash_table_one.conf.MU * hash_table_one.conf.BALL_SIZE)], balls)           
     
     def intersperseStashAndLevelOne(self):
@@ -145,7 +153,9 @@ class ORAM:
     def rebuildLevelOne(self):
         hash_table_one = self.tables[0]
         cuckoo_hash = CuckooHash(hash_table_one.conf)
-        cuckoo_hash.insert_bulk(list(self.local_stash.values()))
+        # Level one has no overflow-pile which raises the stash-size 
+        # but it's ok because it's bounded by MU and therefore would not blow-up the local memory
+        cuckoo_hash.insert_bulk(list(self.local_stash.values()), True)
         hash_table_one.bins_ram.writeChunks([[0, hash_table_one.conf.BIN_SIZE_IN_BYTES]], cuckoo_hash.table1 + cuckoo_hash.table2)
         hash_table_one.local_stash = hash_table_one.byte_operations.ballsToDictionary(cuckoo_hash.stash)
         hash_table_one.is_built = True
