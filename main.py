@@ -24,6 +24,7 @@ def path_ORAM_test(number_of_blocks):
     path_oram = PathORAM(number_of_blocks,False)
     print('rt:', 2*path_oram.number_of_levels())
     print('blocks read per access:', 2*path_oram.number_of_blocks_per_access())
+    print('bytes read per access:', 2*path_oram.number_of_bytes_per_access())
     # allocating memory shouldn't count as 'writing'...
     # reset_counters()
     # for i in range(number_of_blocks):
@@ -147,6 +148,8 @@ if test_type == 1:
     print('RAM.RT_READ: ', local_RAM.RT_READ) 
     print('RAM.BALL_WRITE: ', local_RAM.BALL_WRITE) 
     print('RAM.BALL_READ: ', local_RAM.BALL_READ)
+    print('Bandwidth: ', (local_RAM.BALL_READ+local_RAM.BALL_WRITE)/number_of_blocks)
+    print('Round Trips: ', (local_RAM.RT_READ+local_RAM.RT_WRITE)/number_of_blocks)
 else:
     4
 

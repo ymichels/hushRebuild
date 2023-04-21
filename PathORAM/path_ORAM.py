@@ -29,6 +29,10 @@ class PathORAM:
     def number_of_blocks_per_access(self):
         return self.conf.NUMBER_OF_LEVELS*self.conf.Z + self.position_map.number_of_blocks_per_access()
     
+    def number_of_bytes_per_access(self):
+        return self.conf.NUMBER_OF_LEVELS*self.conf.Z*self.conf.BALL_SIZE + self.position_map.number_of_bytes_per_access()
+
+    
     def allocate_memory(self):
         current_write = 0
         empty_memory = [self.dummy]*self.conf.LOCAL_MEMORY_SIZE_IN_BALLS

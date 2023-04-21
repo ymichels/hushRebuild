@@ -114,7 +114,7 @@ class ORAM:
             previous_table = self.tables[i-1]
             current_table = self.tables[i]
             if current_table.is_built:
-                current_table.copyToEndOfBins(previous_table.bins_ram, 0)
+                # current_table.copyToEndOfBins(previous_table.bins_ram, 0)
                 current_table.intersperse()
                 current_table.is_built = False
             else:

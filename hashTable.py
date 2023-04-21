@@ -144,7 +144,7 @@ class HashTable:
             # we can read 1/EPSILON bins at a time since from each bin we read 2*EPSILON*MU balls
             # capacity_chunks = [(i*self.conf.BIN_SIZE_IN_BYTES,i*self.conf.BIN_SIZE_IN_BYTES + self.conf.BALL_SIZE) for i in range(current_bin, current_bin + int(1/self.conf.EPSILON))]
             # bins_capacity = self.bins_ram.readChunks(capacity_chunks)
-            local_RAM.BALL_READ += int(1/self.conf.EPSILON)
+            # local_RAM.BALL_READ += int(1/self.conf.EPSILON)
             local_RAM.RT_READ += 1
             # bins_capacity is a list of int, each int indicates how many balls in the bin
             # bins_capacity = [int.from_bytes(bin_capacity, 'big', signed=False) for bin_capacity in bins_capacity]
@@ -250,7 +250,7 @@ class HashTable:
         
         # start_locations = [bin_num * self.conf.BIN_SIZE_IN_BYTES for bin_num in local_bins_dict.keys()]
         # bins_capacity = zip(local_bins_dict.keys(), self.bins_ram.readBalls(start_locations))
-        local_RAM.BALL_READ += min(int(self.conf.LOCAL_MEMORY_SIZE/self.conf.BALL_SIZE), self.conf.NUMBER_OF_BINS)
+        # local_RAM.BALL_READ += min(int(self.conf.LOCAL_MEMORY_SIZE/self.conf.BALL_SIZE), self.conf.NUMBER_OF_BINS)
         local_RAM.RT_READ += 1
 
         
@@ -273,8 +273,8 @@ class HashTable:
         #     write_chunks.append((bin_write_loc, bin_write_loc + len(new_balls) * self.conf.BALL_SIZE))
         #     write_balls.extend(new_balls)
         # self.bins_ram.writeChunks(write_chunks,write_balls)
-        local_RAM.BALL_WRITE += int(self.conf.LOCAL_MEMORY_SIZE/self.conf.BALL_SIZE)
-        local_RAM.RT_WRITE += 1
+        # local_RAM.BALL_WRITE += int(self.conf.LOCAL_MEMORY_SIZE/self.conf.BALL_SIZE)
+        # local_RAM.RT_WRITE += 1
 
     def cuckooHashBins(self):
         current_bin_index = 0
