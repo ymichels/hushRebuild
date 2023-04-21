@@ -97,10 +97,13 @@ import cProfile
 import pstats
 from io import StringIO
 from utils.cuckoo_hash import CuckooHash
+b = config(2**30)
 for i in range(40_000):
     print(i)
-    a = CuckooHash(conf=config(2**30))
-    a.insert_bulk(a.generate_random_memory(int(a.conf.MU/2)))
+    a = CuckooHash(conf=b)
+    a.insert_bulk(a.generate_random_memory(int(a.conf.MU/1.1)))
+    print('stash:', b.STASH)
+
 # test_type = int(input('Enter test type:\n1) Our ORAM\n2) Path ORAM\n3) RAM\n'))
 # number_of_MB = int(input('How many MB should the test run?\n'))
 # number_of_blocks = int((number_of_MB*(2**20))/16)

@@ -22,6 +22,7 @@ class CuckooHash:
                 continue
             self.insert_ball(ball)
         print('stash size: ', len(self.stash))
+        self.conf.STASH += len(self.stash)
         if len(self.stash) > 0:
             raise 5
     

@@ -8,7 +8,7 @@ class baseConfig:
 class config(baseConfig):
     N = 2**20
 
-    
+    STASH = 0
     KEY_SIZE = 16
 
     #NOTE: because constructCapacityThresholdBall and deconstructCapacityThresholdBall are not well implemented, 
@@ -18,7 +18,8 @@ class config(baseConfig):
     BALL_STATUS_POSITION = BALL_DATA_SIZE
     BALL_SIZE = BALL_DATA_SIZE + 1 + KEY_SIZE
     LOG_LAMBDA = 9
-    MU = 30*LOG_LAMBDA**3
+    Z = 100
+    MU = int(Z/2) #  30*LOG_LAMBDA**3
     NUMBER_OF_BINS = math.ceil(N/MU)
     BIN_SIZE = 2*MU
     BIN_SIZE_IN_BYTES = BIN_SIZE*BALL_SIZE
