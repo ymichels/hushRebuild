@@ -79,6 +79,9 @@ def our_ORAM_test(oram_size, test_type, number_of_MB):
                 # log_file = open('log-test-{}.size-{}MB'.format(test_type, number_of_MB),'w')
                 # log_file.write(str(percent))
                 # log_file.close()
+    for table in oram.tables:
+        print(len(oram.tables))
+        print('N: ',table.conf.N)
 
     
     print('RAM.RT_WRITE: ', local_RAM.RT_WRITE)
@@ -149,7 +152,7 @@ if test_type == 1:
     print('RAM.BALL_WRITE: ', local_RAM.BALL_WRITE) 
     print('RAM.BALL_READ: ', local_RAM.BALL_READ)
     print('Bandwidth: ', (local_RAM.BALL_READ+local_RAM.BALL_WRITE)/number_of_blocks)
-    print('Round Trips: ', (local_RAM.RT_READ+local_RAM.RT_WRITE)/number_of_blocks)
+    print('Round Trips: ', (local_RAM.RT_READ+local_RAM.RT_WRITE)/(2*number_of_blocks))
 else:
     4
 
