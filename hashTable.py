@@ -468,8 +468,8 @@ class HashTable:
             return
         oblivious_sort = ObliviousSort(self.conf)
         # self._obliviousBallsIntoBinsFirstIteration(oblivious_sort)
-        # next_ram = self.overflow_ram
-        # current_ram = self.second_overflow_ram
+        current_ram = self.overflow_ram
+        next_ram = self.second_overflow_ram
         for bit_num in range(0,math.ceil(math.log(self.conf.NUMBER_OF_BINS_IN_OVERFLOW,2))):
             first_bin_index = 0
             for bin_index in range(math.ceil(self.conf.NUMBER_OF_BINS_IN_OVERFLOW/2)):
