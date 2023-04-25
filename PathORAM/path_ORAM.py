@@ -19,7 +19,7 @@ class PathORAM:
         if (self.conf.N/self.conf.X)*self.conf.BALL_SIZE  < self.conf.LOCAL_MEMORY_SIZE:
             self.position_map = CruchORAM(int(number_of_blocks/self.conf.X))
         else:
-            self.position_map = PathORAM(int(number_of_blocks/self.conf.X), allocate, False)
+            self.position_map = PathORAM(int(number_of_blocks/self.conf.X), allocate, True)
         if allocate:
             self.allocate_memory()
     

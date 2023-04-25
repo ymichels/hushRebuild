@@ -10,7 +10,7 @@ class config(baseConfig):
     def __init__(self, N, is_map=False):
         self.N = N
         self.Z = 4
-        self.X = 2
+        self.X = 4
         self.KEY_SIZE = math.ceil(math.ceil(math.log(N,2))/8)
         if not is_map:
             self.BALL_DATA_SIZE = 16
