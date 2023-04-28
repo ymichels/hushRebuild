@@ -19,18 +19,18 @@ import ctypes
 
 # path ORAM test
 def path_ORAM_test(number_of_blocks):
-
+    frac = 100
     # real_ram = {}
     path_oram = PathORAM(number_of_blocks,True)
     # allocating memory shouldn't count as 'writing'...
     reset_counters()
-    for i in range(int(number_of_blocks/1000)):
+    for i in range(int(number_of_blocks/frac)):
         data = b'\x16'*path_oram.conf.BALL_DATA_SIZE
         # real_ram[i] = data
         path_oram.access('write',i,data)
         if i % 10_000 == 0:
-            print('fraction: ',i/(number_of_blocks/1000))
-    print('accesses: ',number_of_blocks/1000)
+            print('fraction: ',i/(number_of_blocks/frac))
+    print('accesses: ',number_of_blocks/frac)
     # for a 2N test...
     # for i in range(number_of_blocks):
     #     if i % 1_000 == 0:
