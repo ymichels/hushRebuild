@@ -24,13 +24,13 @@ def path_ORAM_test(number_of_blocks):
     path_oram = PathORAM(number_of_blocks,True)
     # allocating memory shouldn't count as 'writing'...
     reset_counters()
-    for i in range(number_of_blocks):
+    for i in range(int(number_of_blocks/1000)):
         data = b'\x16'*path_oram.conf.BALL_DATA_SIZE
         # real_ram[i] = data
         path_oram.access('write',i,data)
-        if i % 1_000 == 0:
-            print(i,': ',len(path_oram.local_stash))
-
+        if i % 10_000 == 0:
+            print('fraction: ',i/(number_of_blocks/1000))
+    print('accesses: ',number_of_blocks/1000)
     # for a 2N test...
     # for i in range(number_of_blocks):
     #     if i % 1_000 == 0:
@@ -67,12 +67,15 @@ def our_ORAM_test(oram_size, test_type, number_of_MB):
                 log_file = open('log-test-{}.size-{}MB'.format(test_type, number_of_MB),'w')
                 log_file.write(str(percent))
                 log_file.close()
-    
-    for i in range(int(oram_size/2)-1):
-        read_ball = oram.access('read',int(i).to_bytes(oram.conf.KEY_SIZE,'big'))
-        value = int.from_bytes(read_ball[:oram.conf.BALL_STATUS_POSITION], 'big', signed=False)
-        if value != i+3 and value != 0:
-            print('no good!')
+
+    oram = ORAM(int(oram_size/2))
+    oram.cleanWriteMemory()
+    percent = 0.0
+    # allocating memory shouldn't count as 'writing'...
+    reset_counters()
+    oram.initial_build('testing_data.txt')
+    for i in range(int(oram_size/2)-5):
+        oram.access('write',int(i).to_bytes(oram.conf.KEY_SIZE,'big'),int(i+3).to_bytes(oram.conf.BALL_DATA_SIZE,'big'))
         if i % 10_000 == 0:
             print('accesses: ',i)
             print('fraction done: ',i/oram_size)
@@ -81,6 +84,20 @@ def our_ORAM_test(oram_size, test_type, number_of_MB):
                 log_file = open('log-test-{}.size-{}MB'.format(test_type, number_of_MB),'w')
                 log_file.write(str(percent))
                 log_file.close()
+    
+    # for i in range(int(oram_size/2)-1):
+    #     read_ball = oram.access('read',int(i).to_bytes(oram.conf.KEY_SIZE,'big'))
+    #     value = int.from_bytes(read_ball[:oram.conf.BALL_STATUS_POSITION], 'big', signed=False)
+    #     if value != i+3 and value != 0:
+    #         print('no good!')
+    #     if i % 10_000 == 0:
+    #         print('accesses: ',i)
+    #         print('fraction done: ',i/oram_size)
+    #         if i/oram_size > percent + 0.01:
+    #             percent += 0.01
+    #             log_file = open('log-test-{}.size-{}MB'.format(test_type, number_of_MB),'w')
+    #             log_file.write(str(percent))
+    #             log_file.close()
             
             
             

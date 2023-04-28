@@ -450,7 +450,7 @@ class HashTable:
                     if self.byte_operations.ballToPseudoRandomNumber(ball, self.conf.NUMBER_OF_BINS) == i*int(1/self.conf.EPSILON)+j:
                         bin.append(ball)
                 bin = [ball for ball in bin if ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] != self.conf.DUMMY_STATUS]
-                self.bins_ram.writeChunk((balls_written*self.conf.BALL_SIZE,len(bin)*self.conf.BALL_SIZE), bin)
+                self.bins_ram.writeChunk((balls_written*self.conf.BALL_SIZE, balls_written*self.conf.BALL_SIZE + len(bin)*self.conf.BALL_SIZE), bin)
                 balls_written += len(bin)
                 if balls_written == self.conf.N:
                     print('extract worked')
