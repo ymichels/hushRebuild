@@ -57,7 +57,7 @@ def our_ORAM_test(oram_size, test_type, number_of_MB):
     # allocating memory shouldn't count as 'writing'...
     reset_counters()
     oram.initial_build('testing_data.txt')
-    for i in range(int(oram_size/2)-1):
+    for i in range(int(oram_size)-1):
         oram.access('write',int(i).to_bytes(oram.conf.KEY_SIZE,'big'),int(i+3).to_bytes(oram.conf.BALL_DATA_SIZE,'big'))
         if i % 10_000 == 0:
             print('accesses: ',i)
@@ -68,23 +68,7 @@ def our_ORAM_test(oram_size, test_type, number_of_MB):
                 log_file.write(str(percent))
                 log_file.close()
 
-    oram = ORAM(int(oram_size/2))
-    oram.cleanWriteMemory()
-    percent = 0.0
-    # allocating memory shouldn't count as 'writing'...
-    reset_counters()
-    oram.initial_build('testing_data.txt')
-    for i in range(int(oram_size/2)-5):
-        oram.access('write',int(i).to_bytes(oram.conf.KEY_SIZE,'big'),int(i+3).to_bytes(oram.conf.BALL_DATA_SIZE,'big'))
-        if i % 10_000 == 0:
-            print('accesses: ',i)
-            print('fraction done: ',i/oram_size)
-            if i/oram_size > percent + 0.01:
-                percent += 0.01
-                log_file = open('log-test-{}.size-{}MB'.format(test_type, number_of_MB),'w')
-                log_file.write(str(percent))
-                log_file.close()
-    
+
     # for i in range(int(oram_size/2)-1):
     #     read_ball = oram.access('read',int(i).to_bytes(oram.conf.KEY_SIZE,'big'))
     #     value = int.from_bytes(read_ball[:oram.conf.BALL_STATUS_POSITION], 'big', signed=False)
