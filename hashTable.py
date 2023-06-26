@@ -452,6 +452,7 @@ class HashTable:
                 bin = [ball for ball in bin if ball[self.conf.BALL_STATUS_POSITION: self.conf.BALL_STATUS_POSITION + 1] != self.conf.DUMMY_STATUS]
                 self.bins_ram.writeChunk((balls_written*self.conf.BALL_SIZE, balls_written*self.conf.BALL_SIZE + len(bin)*self.conf.BALL_SIZE), bin)
                 balls_written += len(bin)
+                # might be somewhere here, writes more balls written then N meaning - it doesn't reach here...
                 if balls_written == self.conf.N:
                     print('extract worked')
                     return
