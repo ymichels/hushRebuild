@@ -4,7 +4,7 @@ import math
 from config import baseConfig
 
 
-BALL_DATA_SIZE = (2**20)
+BALL_DATA_SIZE = (1024*256)
 class config(baseConfig):
 
 

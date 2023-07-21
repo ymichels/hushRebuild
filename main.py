@@ -114,7 +114,7 @@ from io import StringIO
 
 test_type = int(input('Enter test type:\n1) Our ORAM\n2) Path ORAM\n3) RAM\n'))
 number_of_MB = int(input('How many MB should the test run?\n'))
-number_of_blocks = int((number_of_MB*(2**20))/(1024))
+number_of_blocks = int((number_of_MB*(2**20))/(1024*256))
 pr = cProfile.Profile()
 # log_file = open('log-test-{}.size-{}MB'.format(test_type, number_of_MB),'w')
 pr.enable()
